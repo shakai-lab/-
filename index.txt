@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>中学歴史マスター！年号＆時系列バトル</title>
+<style>
+  /* ユニバーサルデザイン配慮のカラーパレットとフォント設定 */
+  :root {
+    --bg-color: #F4F6F9;
+    --card-bg: #FFFFFF;
+    --text-main: #1A202C;
+    --text-sub: #4A5568;
+    --primary: #005BAB;       /* UDブルー */
+    --primary-hover: #004482;
+    --accent: #E65100;        /* UDオレンジ */
+    --accent-hover: #BF360C;
+    --success: #00796B;       /* UDグリーン */
+    --danger: #C62828;        /* UDレッド */
+    --year-card-bg: #E3F2FD;
+    --year-card-border: #1976D2;
+    --event-card-bg: #FFF3E0;
+    --event-card-border: #F57C00;
+    --border-radius: 14px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  * {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ヘッダー */
+  header {
+    width: 100%;
+    background-color: var(--primary);
+    color: #FFFFFF;
+    padding: 12px 20px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    letter-spacing: 0.05em;
+  }
+
+  .btn-small {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-small:active { transform: scale(0.96); }
+
+  /* メインコンテナ */
+  main {
+    width: 100%;
+    max-width: 960px;
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .screen {
+    display: none;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    animation: fadeIn 0.25s ease;
+  }
+
+  .screen.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  h2 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 8px;
+    margin-bottom: 18px;
+  }
+
+  /* フォーム・選択ボタン群 */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: var(--text-main);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    min-width: 180px;
+    padding: 12px 16px;
+    font-size: 1.1rem;
+    border: 2px solid #CBD5E0;
+    border-radius: 10px;
+    font-family: inherit;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  /* 選択肢ボタングリッド */
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .option-btn {
+    padding: 14px 10px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    background: #EDF2F7;
+    color: var(--text-main);
+    border: 3px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .option-btn.selected {
+    background: #EBF8FF;
+    border-color: var(--primary);
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0, 91, 171, 0.2);
+  }
+
+  /* メインアクションボタン */
+  .btn-primary {
+    width: 100%;
+    padding: 18px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #FFFFFF;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--accent-hover);
+    transition: transform 0.1s;
+    margin-top: 10px;
+  }
+
+  .btn-primary:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--accent-hover);
+  }
+
+  /* ゲーム中のステータスバー */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #EDF2F7;
+    padding: 12px 18px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .stat-box {
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+
+  .stat-value {
+    font-size: 1.4rem;
+    color: var(--primary);
+    margin-left: 4px;
+  }
+
+  .stat-timer {
+    color: var(--danger);
+  }
+
+  .combo-badge {
+    background: var(--accent);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    display: inline-block;
+    animation: pop 0.3s ease;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.7); }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  /* ① 神経衰弱グリッド */
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  @media (max-width: 650px) {
+    .memory-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .memory-card {
+    aspect-ratio: 4 / 3;
+    min-height: 95px;
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    text-align: center;
+    font-weight: bold;
+    transition: transform 0.2s, background-color 0.2s, opacity 0.3s;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+    border: 3px solid #CBD5E0;
+    background: #2B6CB0;
+    color: #FFFFFF;
+  }
+
+  /* カード裏面デザイン */
+  .memory-card.hidden-card::after {
+    content: "？";
+    font-size: 2rem;
+    opacity: 0.85;
+  }
+  .memory-card.hidden-card.type-year {
+    background: #1E4E8C;
+    border-color: #63B3ED;
+  }
+  .memory-card.hidden-card.type-year::before {
+    content: "年号";
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .memory-card.hidden-card.type-event {
+    background: #9C4221;
+    border-color: #F6AD55;
+  }
+  .memory-card.hidden-card.type-event::before {
+    content: "出来事";
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* カード表面（めくった状態） */
+  .memory-card.flipped.type-year {
+    background: var(--year-card-bg);
+    border-color: var(--year-card-border);
+    color: #0D47A1;
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  }
+
+  .memory-card.flipped.type-event {
+    background: var(--event-card-bg);
+    border-color: var(--event-card-border);
+    color: #1A202C;
+    font-size: clamp(0.85rem, 1.8vw, 1.05rem);
+    line-height: 1.3;
+  }
+
+  .memory-card.matched {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+  }
+
+  /* ② 時系列並べ替えリスト */
+  .sort-instruction {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+    padding: 0 8px;
+  }
+
+  .sort-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+    touch-action: none; /* タッチドラッグ時の画面スクロール防止 */
+  }
+
+  .sort-item {
+    background: #FFFFFF;
+    border: 3px solid #CBD5E0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: grab;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+    transition: transform 0.1s, box-shadow 0.1s, border-color 0.15s;
+  }
+
+  .sort-item:active {
+    cursor: grabbing;
+  }
+
+  .sort-item.dragging {
+    opacity: 0.92;
+    transform: scale(1.03);
+    border-color: var(--primary);
+    box-shadow: 0 8px 20px rgba(0, 91, 171, 0.25);
+    z-index: 100;
+    background: #EBF8FF;
+  }
+
+  .drag-handle {
+    font-size: 1.5rem;
+    color: #718096;
+    font-weight: bold;
+    padding: 0 4px;
+  }
+
+  .sort-rank {
+    background: var(--primary);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .sort-text {
+    font-size: 1.15rem;
+    font-weight: bold;
+    flex: 1;
+  }
+
+  .sort-year-reveal {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--accent);
+    background: #FFF3E0;
+    padding: 4px 10px;
+    border-radius: 8px;
+    display: none;
+  }
+
+  .sort-item.correct-pos {
+    border-color: var(--success);
+    background: #E0F2F1;
+  }
+  .sort-item.wrong-pos {
+    border-color: var(--danger);
+    background: #FFEBEE;
+  }
+
+  /* フィードバック演出（ポップアップメッセージ） */
+  #feedback-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(0, 0, 0, 0.85);
+    color: #FFF;
+    padding: 20px 36px;
+    border-radius: 20px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  #feedback-overlay.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  /* 紙吹雪キャンバス */
+  #confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 998;
+  }
+
+  /* リザルト画面 */
+  .result-card {
+    text-align: center;
+    background: linear-gradient(135deg, #EBF8FF 0%, #FFF3E0 100%);
+    border: 4px solid var(--primary);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .result-meta {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--text-sub);
+    margin-bottom: 12px;
+  }
+
+  .result-badge {
+    background: #FFFFFF;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid #CBD5E0;
+  }
+
+  .result-score-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+
+  .result-score {
+    font-size: clamp(3rem, 8vw, 4.5rem);
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1.1;
+    margin: 8px 0;
+    text-shadow: 2px 2px 0 #FFFFFF;
+  }
+
+  .result-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--primary);
+    background: #FFFFFF;
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 30px;
+    margin-top: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  .teacher-guide {
+    background: #F7FAFC;
+    border-left: 5px solid var(--primary);
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    color: var(--text-sub);
+    margin-top: 16px;
+    border-radius: 0 8px 8px 0;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+<div id="feedback-overlay"></div>
+
+<header>
+  <h1>📜 中学歴史マスター！年号＆時系列バトル</h1>
+  <button class="btn-small" id="btn-home" style="display:none;" onclick="confirmReturnHome()">🏠 最初に戻る</button>
+</header>
+
+<main>
+  <!-- 1. スタート・設定画面 -->
+  <section id="screen-setup" class="screen active">
+    <h2>🎮 ゲーム設定をえらぼう</h2>
+
+    <div class="form-group">
+      <label class="form-label">① ニックネームとクラス共通コード（任意）</label>
+      <div class="input-row">
+        <input type="text" id="input-nickname" placeholder="ニックネーム（例：れきし王）" maxlength="12">
+        <input type="text" id="input-roomcode" placeholder="クラスコード（例：3年1組）" maxlength="10">
+      </div>
+      <div class="teacher-guide">
+        💡 <strong>クラス全員で競争するとき：</strong>先生の指示で同じ「クラスコード」「ゲーム」「時代」「制限時間」を選ぶと、全員同じ出題パターンで競争できます！（外部通信は行わない安全設計です）
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">② ゲームの種類をえらぶ</label>
+      <div class="option-grid" id="opt-mode">
+        <button type="button" class="option-btn selected" data-val="memory">🃏 年号・出来事<br>神経衰弱</button>
+        <button type="button" class="option-btn" data-val="sort">⏳ 時系列<br>並べ替えクイズ</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">③ 出題する時代をえらぶ</label>
+      <div class="option-grid" id="opt-era">
+        <button type="button" class="option-btn selected" data-val="all">🌍 全時代ミックス</button>
+        <button type="button" class="option-btn" data-val="ancient">🏺 古代（〜平安）</button>
+        <button type="button" class="option-btn" data-val="medieval">⚔️ 中世（鎌倉・室町）</button>
+        <button type="button" class="option-btn" data-val="early_modern">🏯 近世（安土桃山・江戸）</button>
+        <button type="button" class="option-btn" data-val="modern">🚂 近代（明治〜昭和初期）</button>
+        <button type="button" class="option-btn" data-val="contemporary">🕊️ 現代（戦後〜平成）</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">④ 制限時間をえらぶ</label>
+      <div class="option-grid" id="opt-time">
+        <button type="button" class="option-btn" data-val="60">⏱️ 1分（スプリント）</button>
+        <button type="button" class="option-btn selected" data-val="180">⏱️ 3分（スタンダード）</button>
+        <button type="button" class="option-btn" data-val="300">⏱️ 5分（じっくり挑戦）</button>
+      </div>
+    </div>
+
+    <button type="button" class="btn-primary" onclick="startGame()">🚀 ゲームスタート！</button>
+  </section>
+
+  <!-- 2. 神経衰弱ゲーム画面 -->
+  <section id="screen-memory" class="screen">
+    <div class="status-bar">
+      <div class="stat-box">ステージ:<span class="stat-value" id="mem-stage">1</span></div>
+      <div class="stat-box">得点:<span class="stat-value" id="mem-score">0</span> <span id="mem-combo" class="combo-badge" style="display:none;">2連続!</span></div>
+      <div class="stat-box">残り時間:<span class="stat-value stat-timer" id="mem-timer">03:00</span></div>
+    </div>
+    <p style="margin:0 0 12px 0; font-weight:bold; color:var(--text-sub); text-align:center;">
+      青い「年号」とオレンジの「出来事」のペアを見つけよう！
+    </p>
+    <div class="memory-grid" id="memory-board"></div>
+  </section>
+
+  <!-- 3. 時系列並べ替えゲーム画面 -->
+  <section id="screen-sort" class="screen">
+    <div class="status-bar">
+      <div class="stat-box">第<span class="stat-value" id="sort-qnum">1</span>問</div>
+      <div class="stat-box">得点:<span class="stat-value" id="sort-score">0</span> <span id="sort-combo" class="combo-badge" style="display:none;">2連続!</span></div>
+      <div class="stat-box">残り時間:<span class="stat-value stat-timer" id="sort-timer">03:00</span></div>
+    </div>
+
+    <div class="sort-instruction">
+      <span>⬆️ 上ほど【古い】出来事</span>
+      <span>指でつかんで上下に動かそう！</span>
+      <span>⬇️ 下ほど【新しい】出来事</span>
+    </div>
+
+    <div class="sort-list" id="sort-list"></div>
+
+    <button type="button" class="btn-primary" id="btn-check-sort" onclick="checkSortAnswer()">✅ この順番で決定！</button>
+  </section>
+
+  <!-- 4. リザルト画面 -->
+  <section id="screen-result" class="screen">
+    <h2>🎉 タイムアップ！結果発表</h2>
+    <div class="result-card">
+      <div class="result-meta">
+        <span class="result-badge" id="res-nickname">プレイヤー</span>
+        <span class="result-badge" id="res-room">コード: なし</span>
+        <span class="result-badge" id="res-mode">神経衰弱</span>
+        <span class="result-badge" id="res-era">全時代</span>
+      </div>
+      <div class="result-score-label">あなたの最終スコア</div>
+      <div class="result-score" id="res-score">0 pt</div>
+      <div class="result-title" id="res-title">歴史見習い</div>
+      <p id="res-stats" style="margin-top:16px; font-weight:bold; color:var(--text-main);"></p>
+    </div>
+
+    <div class="input-row">
+      <button type="button" class="btn-primary" style="background:var(--primary); box-shadow:0 4px 0 var(--primary-hover);" onclick="startGame()">🔄 同じ設定でもう一度！</button>
+      <button type="button" class="btn-primary" onclick="returnHome()">🏠 設定画面に戻る</button>
+    </div>
+  </section>
+</main>
+
+<script>
+// ==========================================
+// 1. 中学歴史 網羅データベース（古代〜現代）
+// ==========================================
+const HISTORY_DATA = [
+  // 古代 (ancient)
+  { year: 57, yearText: "57年", event: "倭の奴国王が後漢から金印を授かる", era: "ancient" },
+  { year: 239, yearText: "239年", event: "邪馬台国の卑弥呼が魏に使いを送る", era: "ancient" },
+  { year: 538, yearText: "538年", event: "百済から日本に仏教が伝わる", era: "ancient" },
+  { year: 593, yearText: "593年", event: "聖徳太子が推古天皇の摂政になる", era: "ancient" },
+  { year: 604, yearText: "604年", event: "聖徳太子が十七条の憲法を定める", era: "ancient" },
+  { year: 607, yearText: "607年", event: "小野妹子が遣隋使として派遣される", era: "ancient" },
+  { year: 645, yearText: "645年", event: "中大兄皇子らが蘇我氏を倒す（大化の改新）", era: "ancient" },
+  { year: 663, yearText: "663年", event: "白村江の戦いで日本・百済軍が敗れる", era: "ancient" },
+  { year: 672, yearText: "672年", event: "壬申の乱が起こり、天武天皇が即位", era: "ancient" },
+  { year: 701, yearText: "701年", event: "大宝律令が制定される", era: "ancient" },
+  { year: 710, yearText: "710年", event: "都が平城京に移される（奈良時代）", era: "ancient" },
+  { year: 743, yearText: "743年", event: "墾田永年私財法が出される", era: "ancient" },
+  { year: 794, yearText: "794年", event: "桓武天皇が都を平安京に移す", era: "ancient" },
+  { year: 894, yearText: "894年", event: "菅原道真の建議で遣唐使が停止される", era: "ancient" },
+  { year: 1016, yearText: "1016年", event: "藤原道長が摂政となり摂関政治が全盛に", era: "ancient" },
+  { year: 1086, yearText: "1086年", event: "白河上皇が院政を始める", era: "ancient" },
+  { year: 1156, yearText: "1156年", event: "保元の乱が起こり武士の力が強まる", era: "ancient" },
+  { year: 1167, yearText: "1167年", event: "平清盛が武士として初めて太政大臣になる", era: "ancient" },
+
+  // 中世 (medieval)
+  { year: 1185, yearText: "1185年", event: "壇ノ浦の戦いで平氏が滅亡する", era: "medieval" },
+  { year: 1192, yearText: "1192年", event: "源頼朝が征夷大将軍に任命される", era: "medieval" },
+  { year: 1221, yearText: "1221年", event: "承久の乱で幕府軍が朝廷軍を破る", era: "medieval" },
+  { year: 1232, yearText: "1232年", event: "北条泰時が御成敗式目を定める", era: "medieval" },
+  { year: 1274, yearText: "1274年", event: "文永の役（1回目の元寇）が起こる", era: "medieval" },
+  { year: 1281, yearText: "1281年", event: "弘安の役（2回目の元寇）が起こる", era: "medieval" },
+  { year: 1297, yearText: "1297年", event: "鎌倉幕府が永仁の徳政令を出す", era: "medieval" },
+  { year: 1333, yearText: "1333年", event: "鎌倉幕府が滅亡する", era: "medieval" },
+  { year: 1334, yearText: "1334年", event: "後醍醐天皇が建武の新政を始める", era: "medieval" },
+  { year: 1338, yearText: "1338年", event: "足利尊氏が征夷大将軍になり室町幕府を開く", era: "medieval" },
+  { year: 1392, yearText: "1392年", event: "足利義満が南北朝を合一する", era: "medieval" },
+  { year: 1404, yearText: "1404年", event: "日明貿易（勘合貿易）が始まる", era: "medieval" },
+  { year: 1428, yearText: "1428年", event: "正長の土一揆が起こる", era: "medieval" },
+  { year: 1467, yearText: "1467年", event: "応仁の乱が始まり戦国時代へ", era: "medieval" },
+  { year: 1485, yearText: "1485年", event: "山城の国一揆が起こる", era: "medieval" },
+  { year: 1488, yearText: "1488年", event: "加賀の一向一揆が起こる", era: "medieval" },
+
+  // 近世 (early_modern)
+  { year: 1543, yearText: "1543年", event: "種子島にポルトガル人が漂着し鉄砲が伝わる", era: "early_modern" },
+  { year: 1549, yearText: "1549年", event: "フランシスコ・ザビエルがキリスト教を伝える", era: "early_modern" },
+  { year: 1560, yearText: "1560年", event: "桶狭間の戦いで織田信長が今川義元を破る", era: "early_modern" },
+  { year: 1573, yearText: "1573年", event: "織田信長が足利義昭を追放し室町幕府が滅亡", era: "early_modern" },
+  { year: 1575, yearText: "1575年", event: "長篠の戦いで織田・徳川軍が鉄砲隊を活用", era: "early_modern" },
+  { year: 1582, yearText: "1582年", event: "本能寺の変で織田信長が倒れる", era: "early_modern" },
+  { year: 1588, yearText: "1588年", event: "豊臣秀吉が刀狩令を出す", era: "early_modern" },
+  { year: 1590, yearText: "1590年", event: "豊臣秀吉が全国を統一する", era: "early_modern" },
+  { year: 1592, yearText: "1592年", event: "豊臣秀吉が朝鮮へ出兵する（文禄の役）", era: "early_modern" },
+  { year: 1600, yearText: "1600年", event: "関ヶ原の戦いで徳川家康が勝利する", era: "early_modern" },
+  { year: 1603, yearText: "1603年", event: "徳川家康が江戸幕府を開く", era: "early_modern" },
+  { year: 1615, yearText: "1615年", event: "大坂夏の陣で豊臣氏が滅び武家諸法度が出される", era: "early_modern" },
+  { year: 1635, yearText: "1635年", event: "参勤交代の制度が定められる", era: "early_modern" },
+  { year: 1637, yearText: "1637年", event: "島原・天草一揆が起こる", era: "early_modern" },
+  { year: 1639, yearText: "1639年", event: "ポルトガル船の来航が禁止され鎖国が完成", era: "early_modern" },
+  { year: 1685, yearText: "1685年", event: "徳川綱吉が生類憐れみの令を出し始める", era: "early_modern" },
+  { year: 1716, yearText: "1716年", event: "徳川吉宗が享保の改革を始める", era: "early_modern" },
+  { year: 1774, yearText: "1774年", event: "杉田玄白らが『解体新書』を翻訳・出版", era: "early_modern" },
+  { year: 1787, yearText: "1787年", event: "松平定信が寛政の改革を始める", era: "early_modern" },
+  { year: 1825, yearText: "1825年", event: "江戸幕府が異国船打払令を出す", era: "early_modern" },
+  { year: 1837, yearText: "1837年", event: "大塩平八郎の乱が起こる", era: "early_modern" },
+  { year: 1841, yearText: "1841年", event: "水野忠邦が天保の改革を始める", era: "early_modern" },
+  { year: 1853, yearText: "1853年", event: "ペリーが浦賀に来航し開国を求める", era: "early_modern" },
+  { year: 1854, yearText: "1854年", event: "日米和親条約が結ばれる", era: "early_modern" },
+  { year: 1858, yearText: "1858年", event: "日米修好通商条約が結ばれる", era: "early_modern" },
+  { year: 1867, yearText: "1867年", event: "大政奉還が行われ江戸幕府が政権を返上", era: "early_modern" },
+
+  // 近代 (modern)
+  { year: 1868, yearText: "1868年", event: "五箇条の御誓文が出され明治時代が始まる", era: "modern" },
+  { year: 1871, yearText: "1871年", event: "廃藩置県が行われ、岩倉使節団が出発", era: "modern" },
+  { year: 1872, yearText: "1872年", event: "学制が発布され、新橋〜横浜間に鉄道が開通", era: "modern" },
+  { year: 1873, yearText: "1873年", event: "徴兵令と地租改正が行われる", era: "modern" },
+  { year: 1877, yearText: "1877年", event: "西郷隆盛らが西南戦争を起こす", era: "modern" },
+  { year: 1881, yearText: "1881年", event: "国会開設の勅諭が出され自由党が結成", era: "modern" },
+  { year: 1885, yearText: "1885年", event: "内閣制度が創設され伊藤博文が初代首相に", era: "modern" },
+  { year: 1889, yearText: "1889年", event: "大日本帝国憲法が発布される", era: "modern" },
+  { year: 1890, yearText: "1890年", event: "第1回帝国議会が開かれる", era: "modern" },
+  { year: 1894, yearText: "1894年", event: "日清戦争が始まり、領事裁判権の撤廃に成功", era: "modern" },
+  { year: 1895, yearText: "1895年", event: "下関条約が結ばれ、三国干渉を受ける", era: "modern" },
+  { year: 1901, yearText: "1901年", event: "官営の八幡製鉄所が操業を開始する", era: "modern" },
+  { year: 1902, yearText: "1902年", event: "日英同盟が結ばれる", era: "modern" },
+  { year: 1904, yearText: "1904年", event: "日露戦争が始まる", era: "modern" },
+  { year: 1905, yearText: "1905年", event: "ポーツマス条約が結ばれる", era: "modern" },
+  { year: 1910, yearText: "1910年", event: "日本が韓国を併合する", era: "modern" },
+  { year: 1911, yearText: "1911年", event: "関税自主権を完全に回復する（小村寿太郎）", era: "modern" },
+  { year: 1914, yearText: "1914年", event: "第一次世界大戦が始まる", era: "modern" },
+  { year: 1915, yearText: "1915年", event: "日本が中国に二十一か条の要求を出す", era: "modern" },
+  { year: 1917, yearText: "1917年", event: "ロシア革命が起こり世界初の社会主義政府誕生", era: "modern" },
+  { year: 1918, yearText: "1918年", event: "米騒動が起こり、原敬が本格的政党内閣を組織", era: "modern" },
+  { year: 1919, yearText: "1919年", event: "ベルサイユ条約が結ばれる", era: "modern" },
+  { year: 1920, yearText: "1920年", event: "国際連盟が発足する", era: "modern" },
+  { year: 1922, yearText: "1922年", event: "全国水平社が結成される", era: "modern" },
+  { year: 1923, yearText: "1923年", event: "関東大震災が起こる", era: "modern" },
+  { year: 1925, yearText: "1925年", event: "普通選挙法と治安維持法が制定される", era: "modern" },
+  { year: 1929, yearText: "1929年", event: "ニューヨークの株価暴落から世界恐慌が始まる", era: "modern" },
+  { year: 1931, yearText: "1931年", event: "満州事変が起こる", era: "modern" },
+  { year: 1932, yearText: "1932年", event: "五・一五事件で犬養毅首相が暗殺される", era: "modern" },
+  { year: 1933, yearText: "1933年", event: "日本が国際連盟を脱退する", era: "modern" },
+  { year: 1936, yearText: "1936年", event: "二・二六事件が起こる", era: "modern" },
+  { year: 1937, yearText: "1937年", event: "盧溝橋事件をきっかけに日中戦争が始まる", era: "modern" },
+  { year: 1938, yearText: "1938年", event: "国家総動員法が制定される", era: "modern" },
+  { year: 1939, yearText: "1939年", event: "ドイツがポーランドに侵攻し第二次世界大戦開始", era: "modern" },
+  { year: 1940, yearText: "1940年", event: "日独伊三国同盟が結ばれ、大政翼賛会が発足", era: "modern" },
+  { year: 1941, yearText: "1941年", event: "真珠湾攻撃を行い太平洋戦争が始まる", era: "modern" },
+  { year: 1945, yearText: "1945年", event: "ポツダム宣言を受諾し第二次世界大戦が終結", era: "modern" },
+
+  // 現代 (contemporary)
+  { year: 1946, yearText: "1946年", event: "日本国憲法が公布される", era: "contemporary" },
+  { year: 1947, yearText: "1947年", event: "日本国憲法が施行され、教育基本法が制定", era: "contemporary" },
+  { year: 1950, yearText: "1950年", event: "朝鮮戦争が始まり、警察予備隊が創設される", era: "contemporary" },
+  { year: 1951, yearText: "1951年", event: "サンフランシスコ平和条約と日米安全保障条約調印", era: "contemporary" },
+  { year: 1955, yearText: "1955年", event: "自由民主党が結成され「55年体制」が始まる", era: "contemporary" },
+  { year: 1956, yearText: "1956年", event: "日ソ共同宣言により日本が国際連合に加盟", era: "contemporary" },
+  { year: 1960, yearText: "1960年", event: "新日米安全保障条約が結ばれ安保闘争が起こる", era: "contemporary" },
+  { year: 1964, yearText: "1964年", event: "東京オリンピック開催、東海道新幹線が開通", era: "contemporary" },
+  { year: 1965, yearText: "1965年", event: "日韓基本条約が結ばれる", era: "contemporary" },
+  { year: 1972, yearText: "1972年", event: "沖縄が日本に復帰し、日中共同声明に調印", era: "contemporary" },
+  { year: 1973, yearText: "1973年", event: "第1次石油危機（オイルショック）が起こる", era: "contemporary" },
+  { year: 1978, yearText: "1978年", event: "日中平和友好条約が結ばれる", era: "contemporary" },
+  { year: 1989, yearText: "1989年", event: "ベルリンの壁が崩壊し、冷戦の終結が宣言される", era: "contemporary" },
+  { year: 1995, yearText: "1995年", event: "阪神・淡路大震災が起こる", era: "contemporary" },
+  { year: 2011, yearText: "2011年", event: "東日本大震災が起こる", era: "contemporary" }
+];
+
+const ERA_NAMES = {
+  all: "全時代ミックス",
+  ancient: "古代（〜平安）",
+  medieval: "中世（鎌倉・室町）",
+  early_modern: "近世（安土桃山・江戸）",
+  modern: "近代（明治〜昭和初期）",
+  contemporary: "現代（戦後〜平成）"
+};
+
+// ==========================================
+// 2. 状態管理・シード付き乱数（クラス共通出題用）
+// ==========================================
+let config = {
+  nickname: "",
+  roomCode: "",
+  mode: "memory",
+  era: "all",
+  timeLimit: 180
+};
+
+let gameState = {
+  score: 0,
+  combo: 0,
+  maxCombo: 0,
+  timeLeft: 180,
+  timerId: null,
+  isPlaying: false,
+  rng: Math.random,
+  // 神経衰弱用
+  stage: 1,
+  flippedCards: [],
+  matchedPairs: 0,
+  totalPairs: 0,
+  isLockBoard: false,
+  totalClearedPairs: 0,
+  // 並べ替え用
+  qNum: 1,
+  correctQuestions: 0,
+  currentSortItems: [],
+  isCheckingSort: false
+};
+
+// 文字列からハッシュ生成（クラスコードによる擬似乱数シード）
+function createSeededRandom(seedStr) {
+  if (!seedStr) return Math.random;
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    h ^= seedStr.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return function() {
+    h += 0x6D2B79F5;
+    let t = Math.imul(h ^ (h >>> 15), 1 | h);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// 配列シャッフル（シード対応）
+function shuffleArray(array, rngFunc) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rngFunc() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ==========================================
+// 3. UIイベント設定（設定画面の選択ボタン）
+// ==========================================
+function setupOptionButtons(containerId, configKey, isNumber = false) {
+  const container = document.getElementById(containerId);
+  const buttons = container.querySelectorAll(".option-btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      buttons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      const val = btn.getAttribute("data-val");
+      config[configKey] = isNumber ? parseInt(val, 10) : val;
+    });
+  });
+}
+
+setupOptionButtons("opt-mode", "mode");
+setupOptionButtons("opt-era", "era");
+setupOptionButtons("opt-time", "timeLimit", true);
+
+// 画面切り替え
+function showScreen(screenId) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(screenId).classList.add("active");
+  document.getElementById("btn-home").style.display = (screenId === "screen-setup") ? "none" : "inline-block";
+}
+
+function confirmReturnHome() {
+  if (!gameState.isPlaying || confirm("ゲームの途中ですが、最初の画面に戻りますか？")) {
+    returnHome();
+  }
+}
+
+function returnHome() {
+  stopTimer();
+  gameState.isPlaying = false;
+  showScreen("screen-setup");
+}
+
+// ==========================================
+// 4. ゲーム開始・タイマー・演出処理
+// ==========================================
+function getFilteredPool() {
+  if (config.era === "all") return [...HISTORY_DATA];
+  return HISTORY_DATA.filter(item => item.era === config.era);
+}
+
+function startGame() {
+  stopTimer();
+  config.nickname = document.getElementById("input-nickname").value.trim() || "歴史チャレンジャー";
+  config.roomCode = document.getElementById("input-roomcode").value.trim();
+
+  // シード値の初期化（コード + モード + 時代 + 時間）
+  const seedKey = config.roomCode ? `${config.roomCode}_${config.mode}_${config.era}_${config.timeLimit}` : "";
+  gameState = {
+    score: 0,
+    combo: 0,
+    maxCombo: 0,
+    timeLeft: config.timeLimit,
+    timerId: null,
+    isPlaying: true,
+    rng: createSeededRandom(seedKey),
+    stage: 1,
+    flippedCards: [],
+    matchedPairs: 0,
+    totalPairs: 0,
+    isLockBoard: false,
+    totalClearedPairs: 0,
+    qNum: 1,
+    correctQuestions: 0,
+    currentSortItems: [],
+    isCheckingSort: false
+  };
+
+  if (config.mode === "memory") {
+    showScreen("screen-memory");
+    updateMemoryHUD();
+    initMemoryStage();
+  } else {
+    showScreen("screen-sort");
+    updateSortHUD();
+    initSortQuestion();
+  }
+
+  startTimer();
+}
+
+function startTimer() {
+  updateTimerDisplay();
+  gameState.timerId = setInterval(() => {
+    gameState.timeLeft--;
+    updateTimerDisplay();
+    if (gameState.timeLeft <= 0) {
+      endGame();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (gameState.timerId) {
+    clearInterval(gameState.timerId);
+    gameState.timerId = null;
+  }
+}
+
+function updateTimerDisplay() {
+  const m = String(Math.floor(gameState.timeLeft / 60)).padStart(2, "0");
+  const s = String(gameState.timeLeft % 60).padStart(2, "0");
+  const text = `${m}:${s}`;
+  document.getElementById("mem-timer").textContent = text;
+  document.getElementById("sort-timer").textContent = text;
+}
+
+function showFeedback(text, color = "#00796B") {
+  const el = document.getElementById("feedback-overlay");
+  el.textContent = text;
+  el.style.border = `4px solid ${color}`;
+  el.classList.add("show");
+  setTimeout(() => {
+    el.classList.remove("show");
+  }, 750);
+}
+
+// ==========================================
+// 5. ゲーム①：年号・出来事 神経衰弱
+// ==========================================
+function updateMemoryHUD() {
+  document.getElementById("mem-stage").textContent = gameState.stage;
+  document.getElementById("mem-score").textContent = gameState.score;
+  const comboEl = document.getElementById("mem-combo");
+  if (gameState.combo >= 2) {
+    comboEl.textContent = `${gameState.combo}連続ボーナス!`;
+    comboEl.style.display = "inline-block";
+  } else {
+    comboEl.style.display = "none";
+  }
+}
+
+function initMemoryStage() {
+  const board = document.getElementById("memory-board");
+  board.innerHTML = "";
+  gameState.flippedCards = [];
+  gameState.matchedPairs = 0;
+  gameState.isLockBoard = false;
+
+  // ステージが進むごとにペア数を増やす（4ペア → 6ペア → 最大8ペア）
+  let pairCount = 4;
+  if (gameState.stage === 2) pairCount = 6;
+  else if (gameState.stage >= 3) pairCount = 8;
+
+  const pool = shuffleArray(getFilteredPool(), gameState.rng);
+  const selectedItems = pool.slice(0, Math.min(pairCount, pool.length));
+  gameState.totalPairs = selectedItems.length;
+
+  // カードデータ生成（年号カードと出来事カード）
+  let cards = [];
+  selectedItems.forEach((item, idx) => {
+    cards.push({ id: idx, type: "year", text: item.yearText });
+    cards.push({ id: idx, type: "event", text: item.event });
+  });
+
+  cards = shuffleArray(cards, gameState.rng);
+
+  cards.forEach(cardData => {
+    const cardEl = document.createElement("div");
+    cardEl.className = `memory-card hidden-card type-${cardData.type}`;
+    cardEl.dataset.id = cardData.id;
+    cardEl.dataset.type = cardData.type;
+    cardEl.dataset.text = cardData.text;
+
+    cardEl.addEventListener("click", () => handleCardClick(cardEl));
+    board.appendChild(cardEl);
+  });
+}
+
+function handleCardClick(cardEl) {
+  if (!gameState.isPlaying || gameState.isLockBoard) return;
+  if (cardEl.classList.contains("flipped") || cardEl.classList.contains("matched")) return;
+
+  // カードを表にする
+  cardEl.classList.remove("hidden-card");
+  cardEl.classList.add("flipped");
+  cardEl.textContent = cardEl.dataset.text;
+  gameState.flippedCards.push(cardEl);
+
+  if (gameState.flippedCards.length === 2) {
+    checkMemoryMatch();
+  }
+}
+
+function checkMemoryMatch() {
+  gameState.isLockBoard = true;
+  const [card1, card2] = gameState.flippedCards;
+
+  // 同じIDかつ異なるタイプ（年号と出来事）なら正解
+  const isMatch = (card1.dataset.id === card2.dataset.id) && (card1.dataset.type !== card2.dataset.type);
+
+  if (isMatch) {
+    gameState.combo++;
+    if (gameState.combo > gameState.maxCombo) gameState.maxCombo = gameState.combo;
+
+    const bonus = (gameState.combo - 1) * 50;
+    const earned = 100 + bonus;
+    gameState.score += earned;
+    gameState.matchedPairs++;
+    gameState.totalClearedPairs++;
+    updateMemoryHUD();
+
+    showFeedback(`⭕ 正解！ +${earned}pt`, "#00796B");
+
+    setTimeout(() => {
+      card1.classList.add("matched");
+      card2.classList.add("matched");
+      gameState.flippedCards = [];
+      gameState.isLockBoard = false;
+
+      // ステージクリア判定
+      if (gameState.matchedPairs >= gameState.totalPairs && gameState.isPlaying) {
+        const stageBonus = gameState.stage * 200;
+        gameState.score += stageBonus;
+        gameState.stage++;
+        updateMemoryHUD();
+        launchConfetti();
+        showFeedback(`🎉 ステージクリア！ +${stageBonus}pt`, "#E65100");
+        setTimeout(() => {
+          if (gameState.isPlaying) initMemoryStage();
+        }, 900);
+      }
+    }, 550);
+  } else {
+    // 不正解
+    gameState.combo = 0;
+    updateMemoryHUD();
+    setTimeout(() => {
+      card1.classList.remove("flipped");
+      card1.classList.add("hidden-card");
+      card1.textContent = "";
+      card2.classList.remove("flipped");
+      card2.classList.add("hidden-card");
+      card2.textContent = "";
+      gameState.flippedCards = [];
+      gameState.isLockBoard = false;
+    }, 850);
+  }
+}
+
+// ==========================================
+// 6. ゲーム②：時系列 並べ替えクイズ
+// ==========================================
+function updateSortHUD() {
+  document.getElementById("sort-qnum").textContent = gameState.qNum;
+  document.getElementById("sort-score").textContent = gameState.score;
+  const comboEl = document.getElementById("sort-combo");
+  if (gameState.combo >= 2) {
+    comboEl.textContent = `${gameState.combo}連続全問正解!`;
+    comboEl.style.display = "inline-block";
+  } else {
+    comboEl.style.display = "none";
+  }
+}
+
+function initSortQuestion() {
+  gameState.isCheckingSort = false;
+  const btn = document.getElementById("btn-check-sort");
+  btn.disabled = false;
+  btn.textContent = "✅ この順番で決定！";
+
+  // 重複しない年号の出来事を5つ抽出
+  const pool = shuffleArray(getFilteredPool(), gameState.rng);
+  const uniqueYearItems = [];
+  const usedYears = new Set();
+
+  for (const item of pool) {
+    if (!usedYears.has(item.year)) {
+      usedYears.add(item.year);
+      uniqueYearItems.push(item);
+      if (uniqueYearItems.length === 5) break;
+    }
+  }
+
+  // 最初から正解順になっていないようシャッフル
+  let shuffled = shuffleArray(uniqueYearItems, gameState.rng);
+  const sortedYears = [...uniqueYearItems].sort((a, b) => a.year - b.year).map(i => i.year).join(",");
+  if (shuffled.map(i => i.year).join(",") === sortedYears) {
+    shuffled.reverse();
+  }
+
+  gameState.currentSortItems = shuffled;
+  renderSortList();
+}
+
+function renderSortList() {
+  const listEl = document.getElementById("sort-list");
+  listEl.innerHTML = "";
+
+  gameState.currentSortItems.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "sort-item";
+    row.dataset.year = item.year;
+
+    row.innerHTML = `
+      <div class="drag-handle">☰</div>
+      <div class="sort-rank">${index + 1}</div>
+      <div class="sort-text">${item.event}</div>
+      <div class="sort-year-reveal">${item.yearText}</div>
+    `;
+
+    setupTouchDrag(row, listEl);
+    listEl.appendChild(row);
+  });
+}
+
+// タブレット・マウス両対応のPointer Eventsによる直感的な並べ替え
+function setupTouchDrag(itemEl, containerEl) {
+  itemEl.addEventListener("pointerdown", (e) => {
+    if (gameState.isCheckingSort || !gameState.isPlaying) return;
+    e.preventDefault();
+    itemEl.setPointerCapture(e.pointerId);
+    itemEl.classList.add("dragging");
+
+    const onPointerMove = (moveEvent) => {
+      const siblings = [...containerEl.querySelectorAll(".sort-item:not(.dragging)")];
+      const nextSibling = siblings.find(sib => {
+        const rect = sib.getBoundingClientRect();
+        return moveEvent.clientY < rect.top + rect.height / 2;
+      });
+
+      if (nextSibling) {
+        containerEl.insertBefore(itemEl, nextSibling);
+      } else {
+        containerEl.appendChild(itemEl);
+      }
+      updateSortRanks();
+    };
+
+    const onPointerUp = () => {
+      itemEl.classList.remove("dragging");
+      itemEl.removeEventListener("pointermove", onPointerMove);
+      itemEl.removeEventListener("pointerup", onPointerUp);
+      itemEl.removeEventListener("pointercancel", onPointerUp);
+      updateSortRanks();
+    };
+
+    itemEl.addEventListener("pointermove", onPointerMove);
+    itemEl.addEventListener("pointerup", onPointerUp);
+    itemEl.addEventListener("pointercancel", onPointerUp);
+  });
+}
+
+function updateSortRanks() {
+  const rows = document.querySelectorAll("#sort-list .sort-item");
+  rows.forEach((row, idx) => {
+    row.querySelector(".sort-rank").textContent = idx + 1;
+  });
+}
+
+function checkSortAnswer() {
+  if (gameState.isCheckingSort || !gameState.isPlaying) return;
+  gameState.isCheckingSort = true;
+
+  const btn = document.getElementById("btn-check-sort");
+  btn.disabled = true;
+
+  const rows = [...document.querySelectorAll("#sort-list .sort-item")];
+  const userYears = rows.map(r => parseInt(r.dataset.year, 10));
+  const correctYears = [...userYears].sort((a, b) => a - b);
+
+  let correctCount = 0;
+  rows.forEach((row, idx) => {
+    const revealEl = row.querySelector(".sort-year-reveal");
+    revealEl.style.display = "block";
+    if (userYears[idx] === correctYears[idx]) {
+      row.classList.add("correct-pos");
+      correctCount++;
+    } else {
+      row.classList.add("wrong-pos");
+    }
+  });
+
+  if (correctCount === 5) {
+    gameState.combo++;
+    if (gameState.combo > gameState.maxCombo) gameState.maxCombo = gameState.combo;
+    gameState.correctQuestions++;
+
+    const bonus = (gameState.combo - 1) * 100;
+    const earned = 300 + bonus;
+    gameState.score += earned;
+    launchConfetti();
+    showFeedback(`🎉 パーフェクト！ +${earned}pt`, "#00796B");
+  } else {
+    gameState.combo = 0;
+    const partial = correctCount * 30;
+    gameState.score += partial;
+    showFeedback(`惜しい！${correctCount}個一致 (+${partial}pt)`, "#E65100");
+  }
+
+  updateSortHUD();
+
+  setTimeout(() => {
+    if (gameState.isPlaying) {
+      gameState.qNum++;
+      updateSortHUD();
+      initSortQuestion();
+    }
+  }, 1800);
+}
+
+// ==========================================
+// 7. ゲーム終了・リザルト画面・紙吹雪
+// ==========================================
+function endGame() {
+  stopTimer();
+  gameState.isPlaying = false;
+  launchConfetti();
+
+  document.getElementById("res-nickname").textContent = `👤 ${config.nickname}`;
+  document.getElementById("res-room").textContent = config.roomCode ? `🔑 コード: ${config.roomCode}` : "🔑 個人プレイ";
+  document.getElementById("res-mode").textContent = config.mode === "memory" ? "🃏 神経衰弱" : "⏳ 時系列並べ替え";
+  document.getElementById("res-era").textContent = `📚 ${ERA_NAMES[config.era]}`;
+  document.getElementById("res-score").textContent = `${gameState.score.toLocaleString()} pt`;
+
+  // スコアに応じた称号
+  let title = "🌱 歴史チャレンジャー";
+  if (gameState.score >= 3500) title = "👑 伝説の歴史グランドマスター";
+  else if (gameState.score >= 2200) title = "🏆 歴史博士（プロフェッサー）";
+  else if (gameState.score >= 1200) title = "⚔️ 歴戦のサムライ";
+  else if (gameState.score >= 500) title = "📜 歴史の探究者";
+
+  document.getElementById("res-title").textContent = title;
+
+  if (config.mode === "memory") {
+    document.getElementById("res-stats").textContent =
+      `到達ステージ: ${gameState.stage} ／ ペア成立数: ${gameState.totalClearedPairs}組 ／ 最大連続正解: ${gameState.maxCombo}回`;
+  } else {
+    document.getElementById("res-stats").textContent =
+      `挑戦問題数: ${gameState.qNum}問 ／ 完全正解数: ${gameState.correctQuestions}問 ／ 最大連続正解: ${gameState.maxCombo}回`;
+  }
+
+  showScreen("screen-result");
+}
+
+// 軽量紙吹雪アニメーション
+function launchConfetti() {
+  const canvas = document.getElementById("confetti-canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ["#005BAB", "#E65100", "#00796B", "#FBC02D", "#D32F2F"];
+  const particles = Array.from({ length: 65 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    r: Math.random() * 6 + 4,
+    d: Math.random() * 5 + 2,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    tilt: Math.random() * 10 - 5
+  }));
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      p.y += p.d;
+      p.x += Math.sin(frame * 0.05) * 1.5;
+    });
+    frame++;
+    if (frame < 75) {
+      requestAnimationFrame(draw);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  draw();
+}
+</script>
+</body>
+</html>
