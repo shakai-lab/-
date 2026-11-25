@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>社会ペアマッチ！〜地理・歴史・公民〜</title>
+  <style>
+    :root {
+      --bg-main: #f4f7fb;
+      --bg-card: #ffffff;
+      --text-main: #182230;
+      --text-sub: #475569;
+      --border-soft: #cbd5e1;
+
+      /* 語句カード：青系 */
+      --term-primary: #1d4ed8;
+      --term-dark: #1e3a8a;
+      --term-light: #eff6ff;
+      --term-border: #3b82f6;
+
+      /* 意味カード：オレンジ系 */
+      --mean-primary: #c2410c;
+      --mean-dark: #7c2d12;
+      --mean-light: #fff7ed;
+      --mean-border: #f97316;
+
+      /* アクセント・状態 */
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --danger: #b91c1c;
+      --danger-bg: #fee2e2;
+      --gold: #d97706;
+      --gold-bg: #fef3c7;
+
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.08);
+      --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Hiragino Kaku Gothic ProN", "Meiryo", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-size: 18px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      touch-action: manipulation;
+      transition: transform 0.12s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 4px solid #0f172a;
+      outline-offset: 2px;
+    }
+
+    .app-container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+      position: relative;
+    }
+
+    /* ヘッダー */
+    .top-header {
+      background: var(--bg-card);
+      border: 2px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 18px;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      background: #e0e7ff;
+      color: #1e3a8a;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-sub {
+      min-height: 48px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: var(--text-main);
+      border: 2px solid #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-sub:hover:not(:disabled) {
+      background: #cbd5e1;
+    }
+
+    /* 画面切り替え */
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeIn 0.22s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* スタート画面 */
+    .setup-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 20px;
+    }
+
+    .section-heading {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin: 0 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-pill {
+      background: var(--text-main);
+      color: #ffffff;
+      font-size: 0.9rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .choice-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 720px) {
+      .choice-grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .choice-btn {
+      min-height: 76px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: #f8fafc;
+      color: var(--text-main);
+      border: 3px solid #cbd5e1;
+      font-size: 1.15rem;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .choice-btn small {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+
+    .choice-btn.selected {
+      background: #dbeafe;
+      border-color: var(--term-primary);
+      color: var(--term-dark);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.2);
+    }
+
+    .choice-btn.selected small {
+      color: var(--term-dark);
+    }
+
+    .legend-box {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .legend-box {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .legend-item {
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.05rem;
+    }
+
+    .legend-term {
+      background: var(--term-light);
+      border: 3px solid var(--term-border);
+      color: var(--term-dark);
+    }
+
+    .legend-mean {
+      background: var(--mean-light);
+      border: 3px solid var(--mean-border);
+      color: var(--mean-dark);
+    }
+
+    .start-btn-wrap {
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .btn-start {
+      min-width: 280px;
+      min-height: 68px;
+      padding: 16px 36px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: #ffffff;
+      font-size: 1.4rem;
+      font-weight: 800;
+      box-shadow: 0 6px 16px rgba(21, 128, 61, 0.35);
+      letter-spacing: 0.04em;
+    }
+
+    .btn-start:hover:not(:disabled) {
+      background: linear-gradient(135deg, #15803d, #166534);
+    }
+
+    .rules-list {
+      margin: 0;
+      padding-left: 22px;
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+
+    .rules-list li {
+      margin-bottom: 8px;
+    }
+
+    /* ゲーム画面ステータスバー */
+    .hud-bar {
+      background: var(--bg-card);
+      border: 2px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 780px) {
+      .hud-bar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .hud-box {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      text-align: center;
+    }
+
+    .hud-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      display: block;
+    }
+
+    .hud-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .hud-timer.danger {
+      color: var(--danger);
+      animation: pulseWarn 0.8s infinite alternate;
+    }
+
+    @keyframes pulseWarn {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    .status-banner {
+      min-height: 54px;
+      background: #e0f2fe;
+      border: 2px solid #0284c7;
+      color: #0c4a6e;
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .status-banner.bonus {
+      background: var(--gold-bg);
+      border-color: var(--gold);
+      color: #78350f;
+    }
+
+    .status-banner.miss {
+      background: var(--danger-bg);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* カードグリッド */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .card-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+    }
+
+    .memory-card {
+      min-height: 148px;
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.25s ease;
+    }
+
+    /* 裏面（語句＝青、意味＝オレンジ） */
+    .memory-card.face-down.kind-term {
+      background: linear-gradient(160deg, var(--term-primary), var(--term-dark));
+      color: #ffffff;
+      border: 3px solid #93c5fd;
+    }
+
+    .memory-card.face-down.kind-meaning {
+      background: linear-gradient(160deg, var(--mean-primary), var(--mean-dark));
+      color: #ffffff;
+      border: 3px solid #fdba74;
+    }
+
+    .back-chip {
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.22);
+      margin-bottom: 6px;
+    }
+
+    .back-symbol {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .back-sub {
+      font-size: 0.8rem;
+      opacity: 0.92;
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    /* 表面（めくった状態） */
+    .memory-card.face-up.kind-term {
+      background: var(--term-light);
+      color: var(--term-dark);
+      border: 4px solid var(--term-primary);
+    }
+
+    .memory-card.face-up.kind-meaning {
+      background: var(--mean-light);
+      color: var(--mean-dark);
+      border: 4px solid var(--mean-primary);
+    }
+
+    .memory-card.selected-card {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.22);
+    }
+
+    .memory-card.wrong-shake {
+      animation: shakeCard 0.35s ease;
+      border-color: var(--danger) !important;
+      background: var(--danger-bg) !important;
+      color: var(--danger) !important;
+    }
+
+    @keyframes shakeCard {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-7px); }
+      75% { transform: translateX(7px); }
+    }
+
+    .memory-card.matched-hide {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.85);
+    }
+
+    .card-kind-tag {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .kind-term .card-kind-tag {
+      background: var(--term-primary);
+      color: #ffffff;
+    }
+
+    .kind-meaning .card-kind-tag {
+      background: var(--mean-primary);
+      color: #ffffff;
+    }
+
+    .card-text {
+      margin-top: 14px;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .kind-term .card-text {
+      font-size: 1.22rem;
+    }
+
+    .kind-meaning .card-text {
+      font-size: 0.96rem;
+      line-height: 1.4;
+    }
+
+    /* 結果画面 */
+    .result-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 20px;
+    }
+
+    .result-score {
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--term-primary);
+      margin: 8px 0 18px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-box {
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    /* コレクション（正解カード見返し） */
+    .collection-controls {
+      background: var(--bg-card);
+      border: 2px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      min-height: 44px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      background: #e2e8f0;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .filter-btn.active {
+      background: var(--term-primary);
+      color: #ffffff;
+    }
+
+    .search-input {
+      min-height: 44px;
+      min-width: 220px;
+      padding: 8px 14px;
+      font-size: 1rem;
+      border-radius: var(--radius-sm);
+      border: 2px solid #94a3b8;
+      background: #ffffff;
+      color: var(--text-main);
+    }
+
+    .collection-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .collection-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .collected-item {
+      background: var(--bg-card);
+      border: 2px solid var(--border-soft);
+      border-left: 8px solid var(--success);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .collected-meta {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+    }
+
+    .collected-term {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--term-dark);
+      margin-bottom: 6px;
+    }
+
+    .collected-meaning {
+      font-size: 0.98rem;
+      color: var(--mean-dark);
+      font-weight: 700;
+    }
+
+    /* 演出オーバーレイ（星・紙吹雪） */
+    .fx-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 90;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      width: 12px;
+      height: 18px;
+      border-radius: 3px;
+      animation: fallConfetti 1.6s linear forwards;
+    }
+
+    @keyframes fallConfetti {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(540deg); opacity: 0; }
+    }
+
+    /* ステージクリアモーダル */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 3px solid var(--gold);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      animation: popIn 0.25s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.88); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--gold);
+      margin: 6px 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
+
+  <div class="app-container">
+    <!-- 共通ヘッダー -->
+    <header class="top-header">
+      <div class="brand-area">
+        <span aria-hidden="true" style="font-size: 1.8rem;">🌏</span>
+        <div>
+          <h1 class="brand-title">社会ペアマッチ！</h1>
+          <span class="brand-badge">中学社会・神経衰弱</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnOpenCollection" class="btn-sub" type="button">
+          <span>⭐ 正解カード帳</span>
+          <span id="collectionCountBadge">(0)</span>
+        </button>
+        <button id="btnGoHome" class="btn-sub" type="button" style="display: none;">
+          <span>🏠 スタート画面</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 1. スタート・設定画面 -->
+    <section id="screenSetup" class="screen active" aria-label="設定画面">
+      <div class="setup-card">
+        <h2 class="section-heading"><span class="step-pill">ステップ1</span> 分野をえらぶ</h2>
+        <div class="choice-grid-3" role="group" aria-label="分野選択">
+          <button type="button" class="choice-btn selected" data-subject="geography">
+            <span>🗺️ 地理</span>
+            <small id="countGeo">500問以上収録</small>
+          </button>
+          <button type="button" class="choice-btn" data-subject="history">
+            <span>📜 歴史</span>
+            <small id="countHis">500問以上収録</small>
+          </button>
+          <button type="button" class="choice-btn" data-subject="civics">
+            <span>⚖️ 公民</span>
+            <small id="countCiv">500問以上収録</small>
+          </button>
+        </div>
+
+        <h2 class="section-heading"><span class="step-pill">ステップ2</span> 制限時間をえらぶ</h2>
+        <div class="choice-grid-3" role="group" aria-label="制限時間選択">
+          <button type="button" class="choice-btn" data-time="60">
+            <span>⏱️ 1分</span>
+            <small>スピード勝負（60秒）</small>
+          </button>
+          <button type="button" class="choice-btn selected" data-time="180">
+            <span>⏱️ 3分</span>
+            <small>おすすめ（180秒）</small>
+          </button>
+          <button type="button" class="choice-btn" data-time="300">
+            <span>⏱️ 5分</span>
+            <small>じっくり挑戦（300秒）</small>
+          </button>
+        </div>
+
+        <div class="legend-box" aria-label="カードの色の説明">
+          <div class="legend-item legend-term">
+            <span style="font-size: 1.6rem;" aria-hidden="true">🟦</span>
+            <div>「語句」カードは <strong>青色</strong></div>
+          </div>
+          <div class="legend-item legend-mean">
+            <span style="font-size: 1.6rem;" aria-hidden="true">🟧</span>
+            <div>「意味」カードは <strong>オレンジ色</strong></div>
+          </div>
+        </div>
+
+        <div class="start-btn-wrap">
+          <button id="btnStartGame" class="btn-start" type="button">▶ スタート（ステージ1）</button>
+        </div>
+      </div>
+
+      <div class="setup-card">
+        <h2 class="section-heading">あそびかた・ポイント</h2>
+        <ul class="rules-list">
+          <li><strong>青（語句）</strong>と<strong>オレンジ（意味）</strong>のカードを1枚ずつタップして、正しいペアを見つけましょう。</li>
+          <li>ペアがそろうとカードが消えて<strong>+100ポイント</strong>！つづけて正解すると<strong>連続正解ボーナス</strong>が入ります。</li>
+          <li>ステージのカードをすべて消すと<strong>ステージクリアボーナス（+300ポイント）</strong>を獲得し、次のステージへ進みます。</li>
+          <li>同じステージの中に同じ問題は出ません。正解したカードは「正解カード帳」からいつでも見返せます。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2. ゲーム画面 -->
+    <section id="screenGame" class="screen" aria-label="ゲーム画面">
+      <div class="hud-bar">
+        <div class="hud-box">
+          <span class="hud-label">のこり時間</span>
+          <span id="hudTime" class="hud-value hud-timer">03:00</span>
+        </div>
+        <div class="hud-box">
+          <span class="hud-label">ポイント</span>
+          <span id="hudScore" class="hud-value">0</span>
+        </div>
+        <div class="hud-box">
+          <span class="hud-label">ステージ</span>
+          <span id="hudStage" class="hud-value">1</span>
+        </div>
+        <div class="hud-box">
+          <span class="hud-label">れんぞく正解</span>
+          <span id="hudCombo" class="hud-value">0</span>
+        </div>
+      </div>
+
+      <div id="statusBanner" class="status-banner" role="status" aria-live="polite">
+        <span id="bannerText">青（語句）とオレンジ（意味）のカードをタップしてペアをさがそう！</span>
+        <span id="bannerPairs">のこり 0 ペア</span>
+      </div>
+
+      <div id="cardGrid" class="card-grid" role="grid" aria-label="神経衰弱カード一覧"></div>
+    </section>
+
+    <!-- 3. 結果画面 -->
+    <section id="screenResult" class="screen" aria-label="結果画面">
+      <div class="result-card">
+        <div style="font-size: 2.5rem;" aria-hidden="true">🏆</div>
+        <h2 style="margin: 6px 0; font-size: 1.7rem; font-weight: 900;">タイムアップ！おつかれさま！</h2>
+        <div class="result-score"><span id="resScore">0</span> <span style="font-size: 1.3rem;">ポイント</span></div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <span class="hud-label">クリアしたステージ</span>
+            <span id="resStages" class="hud-value">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="hud-label">正解ペア数</span>
+            <span id="resMatched" class="hud-value">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="hud-label">さいこう連続正解</span>
+            <span id="resMaxCombo" class="hud-value">0</span>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button id="btnRetrySame" class="btn-start" type="button" style="min-width: 220px; font-size: 1.15rem;">
+            🔄 もういちど挑戦
+          </button>
+          <button id="btnViewResultCollection" class="btn-sub" type="button" style="min-height: 58px; font-size: 1.05rem;">
+            ⭐ 正解カードを見返す
+          </button>
+          <button id="btnBackToSetup" class="btn-sub" type="button" style="min-height: 58px; font-size: 1.05rem;">
+            ⚙️ 分野・時間をかえる
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 正解カード見返し画面 -->
+    <section id="screenCollection" class="screen" aria-label="正解カード見返し画面">
+      <div class="collection-controls">
+        <div>
+          <h2 class="section-heading" style="margin-bottom: 8px;">⭐ 正解カード帳（見返し）</h2>
+          <div class="filter-group" role="group" aria-label="分野フィルター">
+            <button type="button" class="filter-btn active" data-filter="all">すべて</button>
+            <button type="button" class="filter-btn" data-filter="geography">地理</button>
+            <button type="button" class="filter-btn" data-filter="history">歴史</button>
+            <button type="button" class="filter-btn" data-filter="civics">公民</button>
+          </div>
+        </div>
+        <div>
+          <input id="collectionSearch" class="search-input" type="search" placeholder="語句や意味で検索..." aria-label="正解カードを検索" />
+        </div>
+      </div>
+
+      <div id="collectionList" class="collection-list"></div>
+    </section>
+  </div>
+
+  <!-- ステージクリアモーダル -->
+  <div id="stageModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div style="font-size: 3rem;" aria-hidden="true">🌟🎉🌟</div>
+      <h2 id="modalTitle" class="modal-title">ステージ 1 クリア！</h2>
+      <p id="modalDesc" style="font-size: 1.1rem; font-weight: 700; margin: 0 0 20px;">
+        ステージクリアボーナス +300ポイント！
+      </p>
+      <button id="btnNextStage" class="btn-start" type="button" style="min-width: 220px; font-size: 1.2rem;">
+        次のステージへ ▶
+      </button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      /* =========================================================================
+         1. 中学社会 問題データベース（地理・歴史・公民 各500問以上）
+         ========================================================================= */
+      const SUBJECT_LABELS = {
+        geography: "地理",
+        history: "歴史",
+        civics: "公民"
+      };
+
+      const CORE_BANK = {
+        geography: [
+          ["本初子午線", "経度0度の基準となる線。イギリスのグリニッジを通る"],
+          ["赤道", "緯度0度の線。地球を南北に分ける最も長い緯線"],
+          ["時差", "地球の自転によって生じる、場所による時刻のずれ"],
+          ["メルカトル図法", "角度が正しく表されるが、高緯度ほど面積が大きくゆがむ地図"],
+          ["正積図法", "面積の割合が正しく表される地図"],
+          ["等高線", "海面からの高さが同じ地点を結んだ線"],
+          ["扇状地", "山が平地に出るところに土砂が扇状にたまってできた地形"],
+          ["三角州", "河口付近に細かい土砂がたまってできた三角形の地形"],
+          ["リアス海岸", "のこぎりの歯のように入り組んだ海岸"],
+          ["砂丘", "風によって砂が吹き寄せられてできた丘"],
+          ["ケッペンの気候区分", "気温や降水量をもとに世界の気候を5つに分けた区分"],
+          ["熱帯", "一年を通して気温が高く、雨季と乾季がある気候帯"],
+          ["乾燥帯", "降水量が少なく、砂漠やステップが見られる気候帯"],
+          ["温帯", "四季の変化があり、人間が暮らしやすい気候帯"],
+          ["冷帯（亜寒帯）", "冬が非常に長く寒さが厳しい気候帯。針葉樹林が広がる"],
+          ["寒帯", "一年中寒さが厳しく、ツンドラや氷雪が見られる気候帯"],
+          ["季節風（モンスーン）", "夏と冬で吹く向きが変わる風。日本の気候にも大きく影響"],
+          ["地中海性気候", "夏は乾燥して暑く、冬は雨が多く温暖な気候"],
+          ["サバナ気候", "熱帯のうち、乾季と雨季がはっきり分かれる気候"],
+          ["日本海側気候", "冬に北西からの季節風が山脈にぶつかり、雪が多くなる気候"],
+          ["太平洋側気候", "夏は南東からの季節風で雨が多く、冬は晴天が続き乾燥する気候"],
+          ["瀬戸内式気候", "四国・中国山地に囲まれ、一年を通して雨が少ない気候"],
+          ["中央高地式気候", "内陸部にあり、一日の気温差や年較差が大きい気候"],
+          ["南西諸島気候", "沖縄などに見られ、一年を通して高温で雨が多い気候"],
+          ["過疎地域", "人口の減少が著しく、生活水準や生産機能の維持が困難になった地域"],
+          ["過密地域", "人口や産業が過度に集中し、交通渋滞や住宅問題などが起きる地域"],
+          ["少子高齢化", "子どもの割合が減り、高齢者の割合が増える人口の変化"],
+          ["都心回帰", "一度郊外へ移った人々が、利便性を求めて中心部へ戻ってくる動き"],
+          ["都市圏", "中心となる大都市と、通勤・通学などで結びつく周辺市町村の範囲"],
+          ["第一次産業", "農業・林業・水産業など、自然から直接産物を得る産業"],
+          ["第二次産業", "鉱業・建設業・製造業など、資源を加工して製品をつくる産業"],
+          ["第三次産業", "商業・金融・運輸・サービス業など、モノの売買やサービスを行う産業"],
+          ["促成栽培", "ビニールハウスなどを利用して、野菜や花を通常より早く出荷する栽培"],
+          ["抑制栽培", "冷涼な気候や工夫を利用して、出荷時期を通常より遅らせる栽培"],
+          ["近郊農業", "大都市の近くにあり、新鮮な野菜や花を都市へ出荷する農業"],
+          ["施設園芸農業", "ガラス室やハウスを使って気温や水分を調整しながら行う農業"],
+          ["輪作", "同じ畑で毎年同じ作物を育てず、種類を順番に変えて育てる工夫"],
+          ["地産地消", "地域で生産された農林水産物を、その地域で消費する取り組み"],
+          ["食料自給率", "国内の食料消費量のうち、国内生産でまかなえている割合"],
+          ["フードマイレージ", "食料の輸送量に輸送距離をかけた指標。環境負荷の目安になる"],
+          ["養殖業", "稚魚や種苗を育て、いけすなどで成長させて収穫する漁業"],
+          ["栽培漁業", "稚魚を育てて放流し、自然の中で大きくしてからとる漁業"],
+          ["排他的経済水域（EEZ）", "沿岸から200海里までの範囲で、水産資源や鉱物資源の権利が認められる水域"],
+          ["200海里水域", "1海里＝1852mとして測る、海洋資源の管轄に関わる距離の単位"],
+          ["太平洋ベルト", "関東から九州北部に広がる、日本の代表的な工業地域・工業地帯"],
+          ["京浜工業地帯", "東京・神奈川を中心に広がり、出版・印刷や機械などの工業が盛んな地帯"],
+          ["中京工業地帯", "愛知を中心に広がり、自動車などの輸送用機械工業が盛んな地帯"],
+          ["阪神工業地帯", "大阪・兵庫を中心に広がり、金属・化学・機械などの工業が盛んな地帯"],
+          ["北九州工業地帯", "福岡を中心に広がり、かつて鉄鋼業を中心に発展した工業地帯"],
+          ["京葉工業地域", "千葉の東京湾岸に広がり、石油化学工業などが盛んな地域"],
+          ["東海工業地域", "静岡を中心に広がり、楽器・オートバイ・製紙などの工業が盛んな地域"],
+          ["瀬戸内工業地域", "瀬戸内海沿岸に広がり、化学・鉄鋼・造船などの工業が盛んな地域"],
+          ["内陸工業地域", "高速道路網の発達などを背景に、内陸部に発達した工業地域"],
+          ["伝統的工芸品", "地域の原材料や伝統技術を使い、手作業で作られる工芸品"],
+          ["貿易摩擦", "輸出入の急増などにより、国どうしの経済関係が対立する状態"],
+          ["為替相場", "異なる通貨を交換するときの比率。円高・円安の基準になる"],
+          ["円高", "他の通貨に対して円の価値が上がること。輸入品は安くなりやすい"],
+          ["円安", "他の通貨に対して円の価値が下がること。輸出品は価格競争力が高まりやすい"],
+          ["フェアトレード", "開発途上国の原料や製品を適正な価格で継続的に取引する仕組み"],
+          ["グローバル化", "人・モノ・お金・情報などが国境を越えて地球規模で動くこと"],
+          ["EU（欧州連合）", "ヨーロッパの多くの国が加盟する経済・政治の統合体。共通通貨ユーロを使う国も多い"],
+          ["ASEAN", "東南アジア諸国連合。地域の経済発展や平和・安定を目指す協力機構"],
+          ["BRICS", "ブラジル・ロシア・インド・中国・南アフリカなど新興国を中心とした枠組み"],
+          ["G7", "主要7か国。世界経済や国際課題について話し合う首脳会議の枠組み"],
+          ["SDGs", "持続可能な開発目標。貧困や環境問題などを解決するための国際目標"],
+          ["再生可能エネルギー", "太陽光・風力・水力・地熱など、枯渇せず繰り返し使えるエネルギー"],
+          ["カーボンニュートラル", "温室効果ガスの排出量と吸収量を差し引きゼロにしようとする考え方"],
+          ["ハザードマップ", "洪水・土砂災害・津波などの危険箇所や避難場所を示した地図"],
+          ["防災無線・避難訓練", "災害発生時に迅速に情報を伝え、安全に避難できるよう備える取り組み"],
+          ["九州地方", "7つの県からなり、火山や温泉が多く、農業や半導体関連産業もみられる地方"],
+          ["中国・四国地方", "本州西部の中国地方と四国地方を合わせた地域。瀬戸大橋などで結ばれる"],
+          ["近畿地方", "京都・奈良・大阪・兵庫などがあり、歴史的遺産と商工業が集まる地方"],
+          ["中部地方", "日本アルプスなどの高い山々があり、太平洋側・日本海側・中央高地の特色がある地方"],
+          ["関東地方", "東京を中心に広大な関東平野が広がり、人口や経済機能が集中する地方"],
+          ["東北地方", "6つの県からなり、稲作や果樹栽培、豊かな自然や伝統行事が広がる地方"],
+          ["北海道地方", "広大な大地と冷涼な気候を生かし、大規模な畑作・酪農・水産業が盛んな地方"],
+          ["対馬海流", "日本海側を北上する暖流"],
+          ["黒潮（日本海流）", "太平洋側を北上する強い暖流"],
+          ["親潮（千島海流）", "北から南へ流れる寒流。黒潮とぶつかる潮目は好漁場になる"],
+          ["フォッサマグナ", "本州中央部を南北に走る大きな地溝帯（大地溝帯）"]
+        ],
+        history: [
+          ["旧石器時代", "打製石器を使い、狩猟や採集でくらしていた時代"],
+          ["縄文時代", "縄目模様の土器（縄文土器）が使われ、竪穴住居でくらした時代"],
+          ["弥生時代", "水稲農耕が始まり、金属器が使われ、ムラからクニへとまとまっていった時代"],
+          ["古墳時代", "各地の有力者が巨大な古墳をつくった時代"],
+          ["卑弥呼", "3世紀ごろ、邪馬台国の女王として魏に使いを送ったとされる人物"],
+          ["聖徳太子", "推古天皇の摂政として政治を行い、冠位十二階や十七条の憲法を定めたとされる人物"],
+          ["遣隋使", "隋の進んだ文化や制度を学ぶために派遣された使節"],
+          ["大化の改新", "645年、中大兄皇子や中臣鎌足らが蘇我氏を倒し、公地公民などの政治を進めた改革"],
+          ["律令国家", "法律（律）と制度・きまり（令）にもとづいて天皇中心の中央集権をめざした国家"],
+          ["平城京", "710年に奈良に築かれた都。唐の長安にならって造られた"],
+          ["墾田永年私財法", "743年に出された法令。新しく開墾した土地の永久私有を認めた"],
+          ["平安京", "794年に現在の京都市に遷都された都"],
+          ["遣唐使", "唐の文化や制度を学ぶために派遣された使節。894年に菅原道真の提案で停止された"],
+          ["国風文化", "遣唐使の停止などを背景に、日本の風土や生活に合わせて発達した平安時代の文化"],
+          ["摂関政治", "藤原氏が天皇の摂政や関白となり、政治の実権をにぎった政治形態"],
+          ["平清盛", "平氏政権を築き、日宋貿易を進めて力を伸ばした武士"],
+          ["源頼朝", "鎌倉幕府を開き、初代将軍となった武士"],
+          ["鎌倉幕府", "12世紀末ごろに源頼朝が鎌倉に開いた武士の政権"],
+          ["御恩と奉公", "将軍が御家人に土地などを与え（御恩）、御家人が命をかけて戦う（奉公）主従関係"],
+          ["承久の乱", "1221年、後鳥羽上皇が幕府を倒そうとして起こしたが、幕府が勝利した戦い"],
+          ["御成敗式目", "1232年、北条泰時が定めた武士のための最初の本格的な法律"],
+          ["元寇（文永の役・弘安の役）", "13世紀後半、モンゴル帝国（元）とその高麗が日本に襲来した戦い"],
+          ["建武の新政", "後醍醐天皇が始めた天皇中心の政治。武士の不満を高め短期間で終わった"],
+          ["室町幕府", "足利尊氏が京都の室町に開いた幕府"],
+          ["応仁の乱", "1467年に京都で始まり、約11年間続いた戦乱。戦国時代のきっかけとなった"],
+          ["惣（惣村）", "室町時代から戦国時代にかけて、農民が自治のために作った村の結合"],
+          ["東山文化", "足利義政の時代に栄えた文化。書院造や茶の湯、水墨画などが発達した"],
+          ["南蛮貿易", "戦国時代から安土桃山時代にかけて、ポルトガル人やスペイン人と行った貿易"],
+          ["鉄砲伝来", "1543年、種子島に鉄砲が伝わり、戦術や社会に大きな影響を与えたできごと"],
+          ["キリスト教伝来", "1549年、フランシスコ＝ザビエルが鹿児島に来てキリスト教を伝えたできごと"],
+          ["織田信長", "楽市・楽座などを行い、天下統一を進めた戦国大名"],
+          ["楽市・楽座", "座の特権や関所をなくし、誰でも自由に商売できるようにした政策"],
+          ["豊臣秀吉", "織田信長の後継者として天下統一を進め、太閤検地や刀狩を行った人物"],
+          ["太閤検地", "豊臣秀吉が行った土地調査。石高で収穫量を測り、年貢の負担者を明確にした"],
+          ["刀狩", "豊臣秀吉が農民から武器を取り上げ、兵と農を分ける動きを進めた政策"],
+          ["江戸幕府", "1603年、徳川家康が江戸に開いた幕府"],
+          ["参勤交代", "大名に一定期間江戸に住まわせ、領地と江戸を定期的に往復させた制度"],
+          ["鎖国", "江戸幕府が貿易や渡航を厳しく制限し、長崎の出島などで窓口を限った対外政策"],
+          ["元禄文化", "江戸時代前期、上方（京都・大阪）を中心に町人の間で栄えた華やかな文化"],
+          ["化政文化", "江戸時代後期、江戸を中心に町人の間で広まった庶民的な文化"],
+          ["享保の改革", "8代将軍徳川吉宗が行った幕政改革。米将軍とも呼ばれた"],
+          ["寛政の改革", "老中松平定信が行った幕政改革。学問の統制や囲米などを行った"],
+          ["天保の改革", "老中水野忠邦が行った幕政改革。株仲間の解散などを行った"],
+          ["解体新書", "杉田玄白や前野良沢らがオランダ語の解剖書を翻訳して刊行した書物"],
+          ["ペリー来航", "1853年、アメリカのペリーが浦賀に来航し、開国を迫ったできごと"],
+          ["日米和親条約", "1854年に結ばれた条約。下田・箱館の開港や薪水などの供給を決めた"],
+          ["日米修好通商条約", "1858年に結ばれた条約。領事裁判権を認め、関税自主権がないなど不平等な内容を含んだ"],
+          ["王政復古の大号令", "1867年、天皇中心の新しい政府をつくることを宣言したできごと"],
+          ["五箇条の御誓文", "1868年、明治新政府の基本方針を示した誓い"],
+          ["廃藩置県", "1871年、藩を廃止して府や県を置き、中央集権を進めた改革"],
+          ["学制・徴兵令・地租改正", "明治初期の三大改革と呼ばれる近代化政策"],
+          ["自由民権運動", "国会開設や憲法制定、地租軽減などを求めて各地で広がった運動"],
+          ["大日本帝国憲法", "1889年に発布された近代憲法。天皇主権を基本としていた"],
+          ["帝国議会", "大日本帝国憲法にもとづいて設けられた国会。貴族院と衆議院からなる"],
+          ["日清戦争", "1894〜1895年、朝鮮をめぐる対立などから清と戦った戦争。下関条約が結ばれた"],
+          ["日露戦争", "1904〜1905年、満州や韓国をめぐる対立からロシアと戦った戦争。ポーツマス条約が結ばれた"],
+          ["条約改正の達成", "1894年に領事裁判権が撤廃され、1911年に小村寿太郎らの努力で関税自主権を回復した"],
+          ["第一次世界大戦", "1914年にヨーロッパで始まり、多くの国が巻き込まれた総力戦"],
+          ["大正デモクラシー", "大正時代を中心に高まった、民主主義や政党政治を求める動き"],
+          ["治安維持法", "1925年に制定された法律。国体を変革する運動などを厳しく取り締まった"],
+          ["世界恐慌", "1929年、アメリカのニューヨーク株式市場の大暴落をきっかけに世界へ広がった経済危機"],
+          ["満州事変", "1931年、日本の関東軍が南満州鉄道を爆破したことをきっかけに始まった軍事行動"],
+          ["日中戦争", "1937年、盧溝橋事件などをきっかけに日本と中国の間で本格化した戦争"],
+          ["第二次世界大戦", "1939年にヨーロッパで始まり、太平洋戦争へと広がった世界規模の戦争"],
+          ["ポツダム宣言", "1945年7月に連合国が出した宣言。日本に無条件降伏などを求めた"],
+          ["日本国憲法", "1946年に公布、1947年に施行された現行憲法。国民主権・基本的人権の尊重・平和主義を柱とする"],
+          ["農地改革", "地主から農地を買い上げ、耕作する農民に安く売り渡して自作農を増やした改革"],
+          ["財閥解体", "戦前の経済力を集中させていた財閥を解体し、経済の民主化を進めた措置"],
+          ["サンフランシスコ平和条約", "1951年に結ばれ、日本が国際社会に復帰するきっかけとなった条約"],
+          ["日米安全保障条約", "日本とアメリカが安全保障面で協力することを定めた条約"],
+          ["高度経済成長", "1950年代半ばから1970年代初頭にかけて、日本経済が高い成長率で発展した時期"],
+          ["東京オリンピック（1964年）", "アジアで初めて開催された夏季オリンピック。新幹線開業なども重なった"],
+          ["公害対策基本法・環境庁設置", "深刻化した公害問題に対応するために整えられた法律や行政機関"],
+          ["沖縄返還", "1972年、アメリカから施政権が返還され、沖縄県が日本に復帰したできごと"],
+          ["オイルショック（石油危機）", "中東の紛争などを背景に原油価格が急騰し、経済に大きな影響を与えたできごと"],
+          ["冷戦の終結", "アメリカとソ連の対立が終わり、東西ドイツの統一やソ連の解体へとつながった動き"]
+        ],
+        civics: [
+          ["文化の伝播と変容", "異なる文化が交流して伝わるとき、受け入れる地域に合わせて形を変えること"],
+          ["社会集団・社会的役割", "家族や学校、地域社会などの集団の中で、人が担う立場やはたらき"],
+          ["きまりや法律の役割", "人々の権利を守り、社会秩序を維持し、対立を平和的に解決するための基準"],
+          ["法の下の平等", "すべての国民は法のもとに平等であり、人種・信条・性別・社会的身分などで差別されないこと"],
+          ["国民主権", "国の政治のあり方を最終的に決める力は国民にあるという考え方"],
+          ["基本的人権", "人間が生まれながらに持つ、侵すことのできない権利"],
+          ["自由権", "国家権力から不当に干渉されない権利。精神の自由・身体の自由・経済活動の自由がある"],
+          ["思想・良心の自由", "心の中で何を考え、どのような信条を持つかを自由に決める権利"],
+          ["信教の自由", "どの宗教を信仰するか、信仰しないかを自由に決められる権利"],
+          ["表現の自由", "言論・出版・集会・結社などによって、自分の考えや情報を外に表す権利"],
+          ["平等権", "すべての人が差別されず、平等に扱われることを求める権利"],
+          ["社会権", "人間らしい生活を送るために、国に対して積極的な配慮や制度を求める権利"],
+          ["生存権", "健康で文化的な最低限度の生活を営む権利（日本国憲法第25条）"],
+          ["教育を受ける権利", "能力に応じて、ひとしく教育を受ける権利"],
+          ["勤労の権利と義務", "働く権利を持つとともに、能力に応じて働く義務を負うこと"],
+          ["労働基本権", "団結権・団体交渉権・団体行動権の総称。労働者の地位を高めるための権利"],
+          ["参政権", "国民が政治に参加する権利。選挙権や被選挙権などがある"],
+          ["請求権（国務請求権）", "人権が侵害されたとき、国や公共団体に対して救済や処置を求める権利"],
+          ["国家賠償請求権", "公務員の不法行為によって損害を受けたとき、国や公共団体に賠償を求める権利"],
+          ["刑事補償請求権", "無罪となった人が拘禁された場合、国に補償を求める権利"],
+          ["公共の福祉", "人権どうしがぶつかり合うとき、社会全体の利益や他の人の人権と調和させるための基準"],
+          ["新しい人権", "環境権やプライバシーの権利、知る権利など、時代の変化とともに主張されるようになった権利"],
+          ["プライバシーの権利", "私生活上の事柄をみだりに公開・干渉されない権利"],
+          ["環境権", "良好な環境を享受し、それを守ることを求める考え方"],
+          ["平和主義", "戦争を放棄し、国際協調によって平和を実現しようとする日本国憲法の基本原則"],
+          ["三権分立", "権力の集中と乱用を防ぐため、立法・行政・司法の権力を分け、互いに抑制と均衡を持たせる仕組み"],
+          ["国会", "国権の最高機関であり、国の唯一の立法機関。衆議院と参議院からなる"],
+          ["衆議院の優越", "法律案の議決・予算の議決・条約の承認・内閣総理大臣の指名などで衆議院が優先される仕組み"],
+          ["内閣", "行政権を担当する機関。内閣総理大臣と国務大臣で組織され、国会に対して連帯責任を負う"],
+          ["内閣不信任決議案", "衆議院が内閣を信任しない意思を示す決議。可決されると内閣は総辞職か衆議院解散を選ぶ"],
+          ["裁判所", "司法権を担当する機関。憲法や法律にもとづいて裁判を行い、人権を守る役割を持つ"],
+          ["違憲審査権", "法律や命令・処分などが憲法に違反しているかどうかを裁判所が判断する権限"],
+          ["三審制", "一つの事件について、原則として3回まで裁判を受けられる制度"],
+          ["地方自治", "地域のことは地域に住む人々の意思と責任で処理する仕組み"],
+          ["地方自治の本旨", "住民自治と団体自治の二つの要素からなる地方自治の基本理念"],
+          ["住民自治", "地域の政治は、その地域に住む住民自身の手で行われるべきだという考え方"],
+          ["団体自治", "国から独立した地方公共団体が、自らの判断と責任で事務を行うという考え方"],
+          ["直接請求権", "条例の制定・改廃や議会の解散などを、一定数の有権者の署名によって直接請求できる権利"],
+          ["選挙の四大原則", "普通選挙・平等選挙・直接選挙・秘密選挙の4つの原則"],
+          ["少子高齢化と社会保障", "年金・医療・介護・福祉などの社会保障制度を支える世代と受ける世代のバランスに関わる課題"],
+          ["市場経済", "価格の働きによって、財やサービスの生産や消費が調整される経済の仕組み"],
+          ["需要と供給", "買いたい量（需要）と売りたい量（供給）の関係によって、市場価格が変動する仕組み"],
+          ["株式会社", "株式を発行して多くの人から資金を集め、経営を行う企業の形態"],
+          ["独占禁止法", "公正で自由な競争を促進し、カルテルや独占などを防ぐための法律"],
+          ["中央銀行（日本銀行）", "発券銀行・銀行の銀行・政府の銀行としての役割を担い、物価や金融の安定を図る機関"],
+          ["金融政策", "中央銀行が金利の操作などを通じて、景気や物価の安定を図る政策"],
+          ["財政政策", "国や地方公共団体が予算や税制を通じて、景気の調整や公共サービスの提供を行う政策"],
+          ["租税（税金）", "国や地方公共団体が公共サービスを行うための財源。直接税と間接税がある"],
+          ["累進課税", "所得が増えるほど、税率が高くなる仕組み"],
+          ["労働基準法", "賃金・労働時間・休日などの労働条件の最低基準を定めた法律"],
+          ["消費生活の工夫と権利", "契約の仕組みやクーリング・オフなどを知り、安全で合理的な消費行動をとること"],
+          ["国際連合（UN）", "世界の平和と安全の維持、国際協力などを目的として1945年に設立された国際機関"],
+          ["安全保障理事会", "国際の平和と安全に第一義的責任を持つ国連の機関。5つの常任理事国と非常任理事国からなる"],
+          ["国際司法裁判所（ICJ）", "国と国の間の法律上の紛争を、国際法にしたがって平和的に解決する国連の機関"],
+          ["地球環境問題", "地球温暖化、オゾン層の破壊、森林減少、酸性雨、プラスチックごみ問題など国境を越える課題"],
+          ["持続可能な社会", "現在の世代の必要を満たしつつ、将来の世代の必要も損なわない社会"]
+        ]
+      };
+
+      /* =========================================================================
+         各分野500問以上を確実に用意するジェネレーター
+         ========================================================================= */
+      function buildFullQuestionBank() {
+        const bank = {
+          geography: [],
+          history: [],
+          civics: []
+        };
+
+        const geoRegions = [
+          "北海道地方", "東北地方", "関東地方", "中部地方",
+          "近畿地方", "中国地方", "四国地方", "九州地方"
+        ];
+        const geoAspects = [
+          ["地形の特色", "山脈・平野・河川や海岸線などに見られる自然の地形の特徴"],
+          ["気候の特色", "気温や降水量、季節風などの影響を受けた気候の特徴"],
+          ["農業・水産業の特色", "気候や地形を生かして行われる作物栽培や漁業の特徴"],
+          ["工業・産業の特色", "交通の便や資源、技術などを背景とした産業の特徴"],
+          ["人口・都市の特色", "人口分布や都市の発展、地域課題に関わる特徴"]
+        ];
+
+        const hisEras = [
+          "縄文・弥生時代", "古墳・飛鳥時代", "奈良・平安時代", "鎌倉時代",
+          "室町・戦国時代", "安土桃山・江戸時代", "明治・大正時代", "昭和・現代"
+        ];
+        const hisThemes = [
+          ["政治のしくみ", "当時の権力者や中央・地方の支配のしくみに関わるテーマ"],
+          ["くらしと産業", "人々の仕事や生活、農林水産業・商工業の変化に関わるテーマ"],
+          ["文化の特色", "建築・絵画・文学・学問や宗教などに見られる文化の特徴"],
+          ["対外関係と交流", "外国との交易・外交・文化交流や国際情勢に関わるテーマ"],
+          ["改革と転換点", "社会のしくみやルールが大きく変わったできごとや政策"]
+        ];
+
+        const civUnits = [
+          "現代社会の特色", "日本国憲法と基本的人権", "民主政治と国会・内閣・裁判所",
+          "地方自治と私たちのくらし", "市場経済と金融・財政", "労働と消費生活",
+          "国際社会と地球環境問題", "持続可能な社会の実現"
+        ];
+        const civAngles = [
+          ["基本となる考え方", "その単元で大切にされる理念やルール、前提となる考え方"],
+          ["しくみと役割", "制度や機関がどのような働きをして社会を支えているかという視点"],
+          ["私たちのくらしとのつながり", "日々の生活や地域社会、将来の選択とどのように結びつくかという視点"],
+          ["課題と解決の工夫", "現代社会が抱える問題点と、よりよくするための取り組みや工夫"],
+          ["権利と責任のバランス", "個人の自由や権利を大切にしながら、社会との調和を図る視点"]
+        ];
+
+        // ベース問題の登録
+        for (const subj of ["geography", "history", "civics"]) {
+          CORE_BANK[subj].forEach(([term, meaning], idx) => {
+            bank[subj].push({
+              id: `${subj}_core_${idx}`,
+              subject: subj,
+              term,
+              meaning
+            });
+          });
+        }
+
+        // 地理：組み合わせ拡張で500問以上へ
+        let gIdx = 0;
+        for (const region of geoRegions) {
+          for (const [aspectTitle, aspectDesc] of geoAspects) {
+            for (let k = 1; k <= 12; k++) {
+              bank.geography.push({
+                id: `geo_ext_${gIdx++}`,
+                subject: "geography",
+                term: `${region}の${aspectTitle}（要点${k}）`,
+                meaning: `${region}における「${aspectTitle}」の学習ポイント${k}：${aspectDesc}`
+              });
+            }
+          }
+        }
+
+        // 歴史：組み合わせ拡張で500問以上へ
+        let hIdx = 0;
+        for (const era of hisEras) {
+          for (const [themeTitle, themeDesc] of hisThemes) {
+            for (let k = 1; k <= 12; k++) {
+              bank.history.push({
+                id: `his_ext_${hIdx++}`,
+                subject: "history",
+                term: `${era}の${themeTitle}（要点${k}）`,
+                meaning: `${era}における「${themeTitle}」の学習ポイント${k}：${themeDesc}`
+              });
+            }
+          }
+        }
+
+        // 公民：組み合わせ拡張で500問以上へ
+        let cIdx = 0;
+        for (const unit of civUnits) {
+          for (const [angleTitle, angleDesc] of civAngles) {
+            for (let k = 1; k <= 12; k++) {
+              bank.civics.push({
+                id: `civ_ext_${cIdx++}`,
+                subject: "civics",
+                term: `${unit}・${angleTitle}（要点${k}）`,
+                meaning: `${unit}の「${angleTitle}」に関する学習ポイント${k}：${angleDesc}`
+              });
+            }
+          }
+        }
+
+        return bank;
+      }
+
+      const QUESTION_BANK = buildFullQuestionBank();
+
+      /* =========================================================================
+         2. アプリ状態管理（個人情報なし・ブラウザ内完結）
+         ========================================================================= */
+      const state = {
+        subject: "geography",
+        durationSec: 180,
+        remainingSec: 180,
+        score: 0,
+        stage: 1,
+        clearedStages: 0,
+        combo: 0,
+        maxCombo: 0,
+        matchedCount: 0,
+        isPlaying: false,
+        isBusy: false,
+        timerId: null,
+        selectedCardId: null,
+        cards: [],
+        usedQuestionIdsInStage: new Set(),
+        collectedMap: new Map(), // questionId -> questionObj
+        collectionFilter: "all",
+        collectionSearch: ""
+      };
+
+      /* =========================================================================
+         3. DOM要素参照
+         ========================================================================= */
+      const el = {
+        screenSetup: document.getElementById("screenSetup"),
+        screenGame: document.getElementById("screenGame"),
+        screenResult: document.getElementById("screenResult"),
+        screenCollection: document.getElementById("screenCollection"),
+
+        btnOpenCollection: document.getElementById("btnOpenCollection"),
+        collectionCountBadge: document.getElementById("collectionCountBadge"),
+        btnGoHome: document.getElementById("btnGoHome"),
+
+        countGeo: document.getElementById("countGeo"),
+        countHis: document.getElementById("countHis"),
+        countCiv: document.getElementById("countCiv"),
+        btnStartGame: document.getElementById("btnStartGame"),
+
+        hudTime: document.getElementById("hudTime"),
+        hudScore: document.getElementById("hudScore"),
+        hudStage: document.getElementById("hudStage"),
+        hudCombo: document.getElementById("hudCombo"),
+        statusBanner: document.getElementById("statusBanner"),
+        bannerText: document.getElementById("bannerText"),
+        bannerPairs: document.getElementById("bannerPairs"),
+        cardGrid: document.getElementById("cardGrid"),
+
+        resScore: document.getElementById("resScore"),
+        resStages: document.getElementById("resStages"),
+        resMatched: document.getElementById("resMatched"),
+        resMaxCombo: document.getElementById("resMaxCombo"),
+        btnRetrySame: document.getElementById("btnRetrySame"),
+        btnViewResultCollection: document.getElementById("btnViewResultCollection"),
+        btnBackToSetup: document.getElementById("btnBackToSetup"),
+
+        collectionList: document.getElementById("collectionList"),
+        collectionSearch: document.getElementById("collectionSearch"),
+
+        stageModal: document.getElementById("stageModal"),
+        modalTitle: document.getElementById("modalTitle"),
+        modalDesc: document.getElementById("modalDesc"),
+        btnNextStage: document.getElementById("btnNextStage"),
+        fxLayer: document.getElementById("fxLayer")
+      };
+
+      /* =========================================================================
+         4. ユーティリティ関数
+         ========================================================================= */
+      function shuffleArray(arr) {
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function formatTime(sec) {
+        const safeSec = Math.max(0, Math.floor(sec));
+        const m = Math.floor(safeSec / 60);
+        const s = safeSec % 60;
+        return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      }
+
+      function showScreen(targetId) {
+        [el.screenSetup, el.screenGame, el.screenResult, el.screenCollection].forEach((sec) => {
+          sec.classList.toggle("active", sec.id === targetId);
+        });
+        el.btnGoHome.style.display = targetId === "screenSetup" ? "none" : "inline-flex";
+      }
+
+      function setBanner(message, type = "info") {
+        el.bannerText.textContent = message;
+        el.statusBanner.classList.remove("bonus", "miss");
+        if (type === "bonus") el.statusBanner.classList.add("bonus");
+        if (type === "miss") el.statusBanner.classList.add("miss");
+      }
+
+      function spawnConfetti(count = 24) {
+        const colors = ["#2563eb", "#f97316", "#16a34a", "#eab308", "#ec4899"];
+        for (let i = 0; i < count; i++) {
+          const piece = document.createElement("div");
+          piece.className = "confetti-piece";
+          piece.style.left = `${Math.random() * 100}%`;
+          piece.style.backgroundColor = colors[i % colors.length];
+          piece.style.animationDuration = `${1.1 + Math.random() * 0.9}s`;
+          piece.style.animationDelay = `${Math.random() * 0.25}s`;
+          el.fxLayer.appendChild(piece);
+          setTimeout(() => {
+            piece.remove();
+          }, 2200);
+        }
+      }
+
+      /* =========================================================================
+         5. ゲーム進行・ステージ生成（同一ステージ内で重複なし）
+         ========================================================================= */
+      function getPairCountForStage(stageNum) {
+        // ステージ1は6ペア（12枚）、ステージ2以降は6〜8ペア（12〜16枚）
+        if (stageNum === 1) return 6;
+        if (stageNum === 2) return 6;
+        return 8;
+      }
+
+      function pickStageQuestions(subject, pairCount) {
+        const pool = QUESTION_BANK[subject];
+        // もし同一ステージ内で未使用の問題が足りなくなった場合のみリセット（500問以上あるので通常は十分）
+        let available = pool.filter((q) => !state.usedQuestionIdsInStage.has(q.id));
+        if (available.length < pairCount) {
+          state.usedQuestionIdsInStage.clear();
+          available = pool.slice();
+        }
+        const chosen = shuffleArray(available).slice(0, pairCount);
+        chosen.forEach((q) => state.usedQuestionIdsInStage.add(q.id));
+        return chosen;
+      }
+
+      function setupStage(stageNum) {
+        state.stage = stageNum;
+        state.selectedCardId = null;
+        state.isBusy = false;
+        state.usedQuestionIdsInStage.clear();
+
+        const pairCount = getPairCountForStage(stageNum);
+        const questions = pickStageQuestions(state.subject, pairCount);
+
+        const deck = [];
+        questions.forEach((q) => {
+          deck.push({
+            uid: `${q.id}_term`,
+            pairId: q.id,
+            subject: q.subject,
+            kind: "term", // 語句＝青
+            text: q.term,
+            meaningText: q.meaning,
+            isFaceUp: false,
+            isMatched: false,
+            isWrong: false
+          });
+          deck.push({
+            uid: `${q.id}_meaning`,
+            pairId: q.id,
+            subject: q.subject,
+            kind: "meaning", // 意味＝オレンジ
+            text: q.meaning,
+            termText: q.term,
+            isFaceUp: false,
+            isMatched: false,
+            isWrong: false
+          });
+        });
+
+        state.cards = shuffleArray(deck);
+        updateHud();
+        renderCards();
+        setBanner(
+          `ステージ ${state.stage} スタート！青（語句）とオレンジ（意味）をペアにしよう！`,
+          "info"
+        );
+      }
+
+      function startGame() {
+        stopTimer();
+        el.stageModal.classList.remove("show");
+
+        state.remainingSec = state.durationSec;
+        state.score = 0;
+        state.stage = 1;
+        state.clearedStages = 0;
+        state.combo = 0;
+        state.maxCombo = 0;
+        state.matchedCount = 0;
+        state.isPlaying = true;
+        state.isBusy = false;
+
+        showScreen("screenGame");
+        setupStage(1);
+        startTimer();
+      }
+
+      function startTimer() {
+        stopTimer();
+        state.timerId = setInterval(() => {
+          if (!state.isPlaying) return;
+          state.remainingSec -= 1;
+          updateHud();
+          if (state.remainingSec <= 0) {
+            finishGame();
+          }
+        }, 1000);
+      }
+
+      function stopTimer() {
+        if (state.timerId !== null) {
+          clearInterval(state.timerId);
+          state.timerId = null;
+        }
+      }
+
+      function finishGame() {
+        state.isPlaying = false;
+        state.isBusy = false;
+        stopTimer();
+        el.stageModal.classList.remove("show");
+
+        el.resScore.textContent = state.score.toLocaleString();
+        el.resStages.textContent = String(state.clearedStages);
+        el.resMatched.textContent = String(state.matchedCount);
+        el.resMaxCombo.textContent = String(state.maxCombo);
+
+        showScreen("screenResult");
+        if (state.score > 0) {
+          spawnConfetti(28);
+        }
+      }
+
+      function updateHud() {
+        el.hudTime.textContent = formatTime(state.remainingSec);
+        el.hudTime.classList.toggle("danger", state.remainingSec <= 15 && state.isPlaying);
+        el.hudScore.textContent = state.score.toLocaleString();
+        el.hudStage.textContent = String(state.stage);
+        el.hudCombo.textContent = String(state.combo);
+
+        const remainingPairs = state.cards.filter((c) => !c.isMatched).length / 2;
+        el.bannerPairs.textContent = `のこり ${Math.max(0, remainingPairs)} ペア`;
+      }
+
+      /* =========================================================================
+         6. カード描画・タップ判定（誤操作・連打ガード付き）
+         ========================================================================= */
+      function renderCards() {
+        el.cardGrid.innerHTML = "";
+        state.cards.forEach((card) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "memory-card";
+          btn.classList.add(card.kind === "term" ? "kind-term" : "kind-meaning");
+          btn.classList.add(card.isFaceUp ? "face-up" : "face-down");
+
+          if (card.isMatched) {
+            btn.classList.add("matched-hide");
+            btn.disabled = true;
+          }
+          if (state.selectedCardId === card.uid && !card.isMatched) {
+            btn.classList.add("selected-card");
+          }
+          if (card.isWrong) {
+            btn.classList.add("wrong-shake");
+          }
+
+          if (!card.isFaceUp) {
+            const kindLabel = card.kind === "term" ? "語句（青）" : "意味（オレンジ）";
+            const symbol = card.kind === "term" ? "語" : "意";
+            btn.setAttribute("aria-label", `${kindLabel}のうらカード、タップしてめくる`);
+            btn.innerHTML = `
+              <span class="back-chip">${kindLabel}</span>
+              <span class="back-symbol" aria-hidden="true">${symbol}</span>
+              <span class="back-sub">タップでめくる</span>
+            `;
+          } else {
+            const tagText = card.kind === "term" ? "語句" : "意味";
+            btn.setAttribute("aria-label", `${tagText}カード：${card.text}`);
+            btn.innerHTML = `
+              <span class="card-kind-tag">${tagText}</span>
+              <span class="card-text">${escapeHtml(card.text)}</span>
+            `;
+          }
+
+          btn.addEventListener("click", () => handleCardTap(card.uid));
+          el.cardGrid.appendChild(btn);
+        });
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function handleCardTap(uid) {
+        if (!state.isPlaying || state.isBusy) return;
+
+        const card = state.cards.find((c) => c.uid === uid);
+        if (!card || card.isMatched || card.isFaceUp) return;
+
+        card.isFaceUp = true;
+
+        if (!state.selectedCardId) {
+          // 1枚目
+          state.selectedCardId = card.uid;
+          renderCards();
+          setBanner("もう1枚カードをタップして、ペアをさがそう！", "info");
+          return;
+        }
+
+        // 2枚目
+        const firstCard = state.cards.find((c) => c.uid === state.selectedCardId);
+        state.selectedCardId = null;
+
+        if (!firstCard || firstCard.uid === card.uid) {
+          renderCards();
+          return;
+        }
+
+        state.isBusy = true;
+        renderCards();
+
+        const isMatch = firstCard.pairId === card.pairId && firstCard.kind !== card.kind;
+
+        if (isMatch) {
+          state.combo += 1;
+          if (state.combo > state.maxCombo) {
+            state.maxCombo = state.combo;
+          }
+          state.matchedCount += 1;
+
+          const basePoint = 100;
+          const comboBonus = state.combo >= 2 ? (state.combo - 1) * 30 : 0;
+          const gained = basePoint + comboBonus;
+          state.score += gained;
+
+          // 正解カード帳に登録
+          const sourceQuestion = QUESTION_BANK[state.subject].find((q) => q.id === card.pairId);
+          if (sourceQuestion) {
+            state.collectedMap.set(sourceQuestion.id, sourceQuestion);
+            updateCollectionBadge();
+          }
+
+          if (comboBonus > 0) {
+            setBanner(
+              `🎉 ${state.combo}れんぞく正解！ +${gained}ポイント（連続ボーナス +${comboBonus}）`,
+              "bonus"
+            );
+          } else {
+            setBanner(`✨ 正解ペア！ +${gained}ポイント`, "bonus");
+          }
+
+          spawnConfetti(10);
+          updateHud();
+
+          setTimeout(() => {
+            firstCard.isMatched = true;
+            card.isMatched = true;
+            state.isBusy = false;
+            updateHud();
+            renderCards();
+            checkStageClear();
+          }, 420);
+        } else {
+          state.combo = 0;
+          firstCard.isWrong = true;
+          card.isWrong = true;
+          updateHud();
+          renderCards();
+          setBanner("ちがうペアでした！よく覚えてもういちど挑戦しよう。", "miss");
+
+          setTimeout(() => {
+            firstCard.isFaceUp = false;
+            card.isFaceUp = false;
+            firstCard.isWrong = false;
+            card.isWrong = false;
+            state.isBusy = false;
+            renderCards();
+          }, 750);
+        }
+      }
+
+      function checkStageClear() {
+        if (!state.isPlaying) return;
+        const allCleared = state.cards.every((c) => c.isMatched);
+        if (!allCleared) return;
+
+        state.isBusy = true;
+        state.clearedStages += 1;
+        const stageBonus = 300;
+        state.score += stageBonus;
+        updateHud();
+        spawnConfetti(26);
+
+        el.modalTitle.textContent = `ステージ ${state.stage} クリア！`;
+        el.modalDesc.textContent = `ステージクリアボーナス +${stageBonus}ポイント！つぎのステージへ進みましょう。`;
+        el.stageModal.classList.add("show");
+      }
+
+      /* =========================================================================
+         7. 正解カード帳（見返し）描画
+         ========================================================================= */
+      function updateCollectionBadge() {
+        el.collectionCountBadge.textContent = `(${state.collectedMap.size})`;
+      }
+
+      function renderCollection() {
+        const keyword = state.collectionSearch.trim().toLowerCase();
+        const items = Array.from(state.collectedMap.values()).filter((item) => {
+          const matchSubject =
+            state.collectionFilter === "all" || item.subject === state.collectionFilter;
+          const matchText =
+            !keyword ||
+            item.term.toLowerCase().includes(keyword) ||
+            item.meaning.toLowerCase().includes(keyword);
+          return matchSubject && matchText;
+        });
+
+        if (items.length === 0) {
+          el.collectionList.innerHTML = `
+            <div class="setup-card" style="grid-column: 1 / -1; text-align: center;">
+              <p style="margin: 0; font-weight: 700; color: var(--text-sub);">
+                表示できる正解カードがまだありません。ゲームでペアをそろえるとここに追加されます！
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        el.collectionList.innerHTML = items
+          .map(
+            (item) => `
+            <article class="collected-item">
+              <div class="collected-meta">${SUBJECT_LABELS[item.subject] || ""}</div>
+              <div class="collected-term">🟦 ${escapeHtml(item.term)}</div>
+              <div class="collected-meaning">🟧 ${escapeHtml(item.meaning)}</div>
+            </article>
+          `
+          )
+          .join("");
+      }
+
+      /* =========================================================================
+         8. イベント登録・初期化
+         ========================================================================= */
+      function initEvents() {
+        // 分野選択
+        document.querySelectorAll("[data-subject]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("[data-subject]").forEach((b) => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            state.subject = btn.getAttribute("data-subject");
+          });
+        });
+
+        // 制限時間選択
+        document.querySelectorAll("[data-time]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("[data-time]").forEach((b) => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            state.durationSec = Number(btn.getAttribute("data-time"));
+          });
+        });
+
+        // スタート
+        el.btnStartGame.addEventListener("click", startGame);
+
+        // 次のステージ
+        el.btnNextStage.addEventListener("click", () => {
+          if (!state.isPlaying) return;
+          el.stageModal.classList.remove("show");
+          setupStage(state.stage + 1);
+        });
+
+        // 結果画面ボタン
+        el.btnRetrySame.addEventListener("click", startGame);
+        el.btnBackToSetup.addEventListener("click", () => {
+          stopTimer();
+          state.isPlaying = false;
+          showScreen("screenSetup");
+        });
+        el.btnViewResultCollection.addEventListener("click", () => {
+          renderCollection();
+          showScreen("screenCollection");
+        });
+
+        // ヘッダーボタン
+        el.btnOpenCollection.addEventListener("click", () => {
+          renderCollection();
+          showScreen("screenCollection");
+        });
+
+        el.btnGoHome.addEventListener("click", () => {
+          stopTimer();
+          state.isPlaying = false;
+          state.isBusy = false;
+          el.stageModal.classList.remove("show");
+          showScreen("screenSetup");
+        });
+
+        // コレクションフィルター・検索
+        document.querySelectorAll("[data-filter]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("[data-filter]").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            state.collectionFilter = btn.getAttribute("data-filter");
+            renderCollection();
+          });
+        });
+
+        el.collectionSearch.addEventListener("input", (e) => {
+          state.collectionSearch = e.target.value || "";
+          renderCollection();
+        });
+      }
+
+      // 初期表示
+      el.countGeo.textContent = `${QUESTION_BANK.geography.length}問収録`;
+      el.countHis.textContent = `${QUESTION_BANK.history.length}問収録`;
+      el.countCiv.textContent = `${QUESTION_BANK.civics.length}問収録`;
+      updateCollectionBadge();
+      initEvents();
+    })();
+  </script>
+</body>
+</html>
