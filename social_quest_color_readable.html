@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101a33">
+<title>SOCIAL QUEST | 社会科神経衰弱</title>
+<style>
+:root{
+  --bg:#0b1224;--panel:#141f38;--panel2:#1b2947;--line:#304365;
+  --text:#ffffff;--muted:#e0e9f8;--blue:#3988ff;--orange:#ff9b45;
+  --green:#39d6a0;--gold:#ffd166;--red:#ff637b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#1c3157 0%,var(--bg) 58%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;font-weight:600;min-height:100vh}
+button,select,input{font:inherit}
+button{cursor:pointer}
+.app{max-width:1180px;margin:auto;padding:18px 18px 40px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.brand{font-weight:900;letter-spacing:.12em;font-size:clamp(18px,3vw,26px)}
+.brand span{color:var(--gold)}
+.pill{border:1px solid var(--line);background:#15223d;padding:8px 12px;border-radius:999px;color:var(--muted);font-size:12px}
+.panel{background:linear-gradient(145deg,rgba(26,42,72,.96),rgba(17,28,50,.96));border:1px solid var(--line);border-radius:22px;padding:clamp(18px,3vw,30px);box-shadow:0 18px 50px #0004}
+.hero{text-align:center;padding:clamp(28px,6vw,62px) 20px}
+.eyebrow{color:var(--gold);font-weight:800;letter-spacing:.18em;font-size:12px}
+h1{font-size:clamp(30px,6vw,58px);line-height:1.12;margin:12px 0}
+.lead{color:var(--muted);line-height:1.8;max-width:620px;margin:0 auto 26px}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:650px;margin:24px auto}
+.field{text-align:left}
+.field label{display:block;color:var(--muted);font-size:13px;margin:0 0 8px 4px}
+select,input{width:100%;padding:14px 15px;border-radius:12px;border:1px solid var(--line);background:#0e1930;color:var(--text);outline:none}
+.primary,.secondary,.danger{border:0;border-radius:14px;padding:14px 22px;font-weight:850;transition:.18s;min-height:48px}
+.primary{background:linear-gradient(100deg,#3988ff,#5a6dff);color:white;box-shadow:0 8px 24px #397dff44}
+.primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.secondary{background:#253654;color:var(--text);border:1px solid #405577}
+.danger{background:#4a2436;color:#ffdce4;border:1px solid #82435a}
+.wide{width:min(100%,360px)}
+.note{color:#d6e2f5;font-size:13px;line-height:1.7;margin-top:18px}
+.hidden{display:none!important}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:#14213b;border:1px solid var(--line);border-radius:15px;padding:12px 14px;min-width:0}
+.stat small{display:block;color:#d6e2f5;font-size:12px;font-weight:750;margin-bottom:4px}
+.stat strong{font-size:clamp(17px,3vw,25px);font-variant-numeric:tabular-nums}
+.timer-warn{color:var(--red)!important}
+.gamebar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 2px 18px;flex-wrap:wrap}
+.stage{font-weight:900;font-size:20px}
+.subtle{color:#d6e2f5;font-size:14px;font-weight:650}
+.progress{height:7px;background:#263652;border-radius:9px;overflow:hidden;margin-top:9px}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--green),#79f0d1);width:0%;transition:width .25s}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,1.5vw,14px);width:100%;align-items:stretch}
+.card{display:block;width:100%;border:0;padding:0;background:transparent;aspect-ratio:1.22;min-width:0;min-height:72px;touch-action:manipulation;-webkit-appearance:none;appearance:none}
+.card-inner{display:block;position:relative;width:100%;height:100%;min-height:72px}
+.face{position:absolute;inset:0;border-radius:15px;display:flex;align-items:center;justify-content:center;text-align:center;padding:9px;border:1px solid #ffffff35;box-shadow:0 6px 15px #0003;overflow:hidden}
+.back{display:flex;background:linear-gradient(145deg,#2674d9,#174b91);color:#ffffff;font-size:clamp(19px,4vw,30px);font-weight:900}
+.back:after{content:"✦";position:absolute;opacity:.22;font-size:clamp(48px,8vw,80px)}
+.card.meaning .back{background:linear-gradient(145deg,#e88735,#a94f16);color:#fff7ed}
+.front.term{background:linear-gradient(145deg,#2674d9,#174b91);border-color:#9acbff}
+.front.meaning{background:linear-gradient(145deg,#e88735,#a94f16);border-color:#ffd0a1}
+.front{display:none;font-size:clamp(13px,2vw,18px);font-weight:850;line-height:1.5;overflow-wrap:anywhere;color:#fff;text-shadow:0 1px 1px #0004}
+.card.flipped .back,.card.matched .back{display:none}
+.card.flipped .front,.card.matched .front{display:flex}
+.kind{position:absolute;top:7px;left:8px;font-size:10px;letter-spacing:.08em;opacity:1;color:#fff;font-weight:900}
+.card.matched{opacity:.18;pointer-events:none}
+.card:disabled{cursor:default}
+.card:not(:disabled):active{transform:scale(.97)}
+.game-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+.combo-pop{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:20}
+.combo-pop span{font-size:clamp(34px,8vw,76px);font-weight:1000;font-style:italic;text-shadow:0 8px 35px #000b;color:var(--gold);animation:pop .75s ease forwards}
+@keyframes pop{0%{opacity:0;transform:scale(.45) rotate(-8deg)}25%{opacity:1;transform:scale(1.12) rotate(2deg)}75%{opacity:1}100%{opacity:0;transform:scale(1.25) translateY(-35px)}}
+.overlay{position:fixed;inset:0;background:#050a15d9;display:grid;place-items:center;padding:18px;z-index:30}
+.modal{width:min(100%,600px);max-height:88vh;overflow:auto;background:#172541;border:1px solid #405477;border-radius:22px;padding:24px;text-align:center}
+.modal h2{font-size:clamp(25px,5vw,38px);margin:8px 0}
+.bigscore{font-size:clamp(42px,9vw,68px);font-weight:1000;color:var(--gold);font-variant-numeric:tabular-nums}
+.result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:20px 0}
+.result-item{background:#0e1930;border-radius:12px;padding:12px}
+.result-item small{display:block;color:var(--muted);font-size:11px}
+.result-item strong{font-size:21px}
+.review-list{text-align:left;max-height:260px;overflow:auto;margin:12px 0}
+.review-item{padding:11px;border-bottom:1px solid var(--line);font-size:13px;line-height:1.6}
+.review-item b{color:#8dbdff}
+.review-item em{color:#ffc17d;font-style:normal}
+.review-tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.small{font-size:12px}
+footer{text-align:center;color:#7183a3;font-size:11px;margin-top:25px}
+@media(max-width:650px){
+ .app{padding:12px 12px 28px}.hud{grid-template-columns:repeat(2,1fr)}
+ .board{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .card{aspect-ratio:1.05}.face{border-radius:12px;padding:6px}
+ .controls{grid-template-columns:1fr}.gamebar{margin-bottom:12px}
+}
+@media(max-width:370px){.board{gap:6px}.front{font-size:10px}.face{padding:5px}}
+@media(orientation:landscape) and (max-height:540px){
+ .app{padding-top:8px}.board{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+ .card{aspect-ratio:1.35}.hero{padding:20px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">SOCIAL <span>QUEST</span></div>
+  <div class="pill">SOCIAL STUDIES · MEMORY GAME</div>
+</header>
+
+<section id="home" class="panel hero">
+  <div class="eyebrow">KNOWLEDGE IS YOUR POWER</div>
+  <h1>社会科の知識で、<br><span style="color:#ffd166">頂点を目指せ。</span></h1>
+  <p class="lead">語句と意味をつなげてステージを突破しよう。<br>コンボをつなぎ、最高スコアを叩き出せ！</p>
+  <div class="controls">
+    <div class="field"><label for="category">プレイする分野</label>
+      <select id="category"><option value="地理">地理</option><option value="歴史">歴史</option><option value="公民">公民</option></select>
+    </div>
+    <div class="field"><label for="duration">制限時間</label>
+      <select id="duration"><option value="60">1分</option><option value="180" selected>3分</option><option value="300">5分</option></select>
+    </div>
+  </div>
+  <button class="primary wide" id="startBtn">ゲームスタート　▶</button>
+  <p class="note">※このバージョンは1端末で遊ぶ試作版です。クラス一斉参加・リアルタイムランキングは通信機能の接続後に実装します。</p>
+</section>
+
+<section id="game" class="hidden">
+  <div class="hud">
+    <div class="stat"><small>TIME LEFT</small><strong id="time">03:00</strong></div>
+    <div class="stat"><small>SCORE</small><strong id="score">0</strong></div>
+    <div class="stat"><small>COMBO</small><strong id="combo">0</strong></div>
+    <div class="stat"><small>STAGE</small><strong id="stageHud">1</strong></div>
+  </div>
+  <div class="panel">
+    <div class="gamebar">
+      <div><div class="stage" id="stageTitle">STAGE 1</div><div class="subtle" id="stageSub">すべてのペアを見つけよう</div></div>
+      <div class="pill" id="categoryTag">地理</div>
+    </div>
+    <div class="progress"><div id="progressBar"></div></div>
+    <div style="height:16px"></div>
+    <div class="board" id="board"></div>
+    <div class="game-actions">
+      <span class="subtle" id="pairsLeft">残り6ペア</span>
+      <button class="secondary small" id="reviewBtn">復習リスト</button>
+    </div>
+  </div>
+</section>
+
+<section id="end" class="panel hidden" style="text-align:center">
+  <div class="eyebrow">MISSION COMPLETE</div>
+  <h2>TIME UP!</h2>
+  <div class="bigscore" id="finalScore">0</div>
+  <div class="subtle">FINAL SCORE</div>
+  <div class="result-grid">
+    <div class="result-item"><small>到達ステージ</small><strong id="finalStage">1</strong></div>
+    <div class="result-item"><small>正解ペア数</small><strong id="finalCorrect">0</strong></div>
+    <div class="result-item"><small>正解率</small><strong id="finalRate">0%</strong></div>
+    <div class="result-item"><small>最大コンボ</small><strong id="finalCombo">0</strong></div>
+  </div>
+  <h3 id="titleAward">称号：挑戦者</h3>
+  <button class="primary wide" id="againBtn">もう一度プレイ</button>
+  <button class="secondary wide" id="endReviewBtn" style="margin-top:9px">復習リストを見る</button>
+</section>
+<footer>LOCAL PROTOTYPE · SOCIAL QUEST</footer>
+</div>
+
+<div id="overlay" class="overlay hidden">
+  <div class="modal">
+    <div class="eyebrow" id="modalEyebrow">REVIEW</div>
+    <h2 id="modalTitle">復習リスト</h2>
+    <div class="review-tabs">
+      <button class="secondary small" id="allTab">すべて</button>
+      <button class="secondary small" id="wrongTab">間違えた問題</button>
+      <button class="secondary small" id="rightTab">正解した問題</button>
+    </div>
+    <div class="review-list" id="reviewList"></div>
+    <button class="primary wide" id="closeModal">閉じる</button>
+  </div>
+</div>
+<div class="combo-pop" id="comboPop"></div>
+
+<script>
+"use strict";
+const BANK = {
+地理: [
+["季節風","季節によって風向きが変わる風"],
+["偏西風","中緯度地域で西から東へ吹く風"],
+["熱帯雨林気候","一年を通して高温で雨が多い気候"],
+["地中海性気候","夏に乾燥し、冬に雨が多い気候"],
+["サバナ気候","雨季と乾季がはっきり分かれる気候"],
+["モンスーン","アジアなどに吹く季節風"],
+["リアス海岸","海岸線が複雑に入り組んだ海岸"],
+["扇状地","川が山地から平地に出た所にできる地形"],
+["三角州","河口付近に土砂が堆積してできる地形"],
+["カルデラ","火山の噴火などでできた大きなくぼ地"],
+["促成栽培","温暖な地域で出荷時期を早める栽培"],
+["抑制栽培","高冷地などで出荷時期を遅らせる栽培"],
+["近郊農業","大都市の近くで野菜などを生産する農業"],
+["施設園芸農業","温室やビニールハウスを使う農業"],
+["輪中","水害を防ぐため集落や田畑を堤防で囲んだ地域"],
+["やませ","東北地方の太平洋側に吹く冷たく湿った風"],
+["促成栽培","出荷時期を早めるために工夫する栽培方法"],
+["工業地域","工場が集まり工業生産が盛んな地域"],
+["太平洋ベルト","関東から九州北部にかけて工業が集中する地域"],
+["京浜工業地帯","東京・川崎・横浜を中心とする工業地帯"],
+["中京工業地帯","愛知県を中心に自動車工業が盛んな工業地帯"],
+["阪神工業地帯","大阪・神戸を中心とする工業地帯"],
+["北九州工業地域","福岡県北部を中心に発達した工業地域"],
+["促成栽培","暖かさを生かして早く出荷する栽培"],
+["排他的経済水域","沿岸国が水産資源や海底資源を管理できる水域"],
+["領海","沿岸国の主権が及ぶ海域"],
+["プランテーション","熱帯・亜熱帯で商品作物を大規模栽培する農園"],
+["モノカルチャー経済","特定の農産物や鉱産資源の輸出に依存する経済"],
+["人口ピラミッド","年齢別・男女別の人口構成を表すグラフ"],
+["過疎","人口が減少し地域の機能維持が難しくなる状態"],
+["過密","人口や都市機能が狭い地域に集中した状態"],
+["少子高齢化","子どもの割合が低下し高齢者の割合が上昇すること"],
+["地産地消","地域で生産されたものを地域で消費すること"],
+["再生可能エネルギー","自然の力を利用し繰り返し使えるエネルギー"],
+["フェアトレード","発展途上国の生産者に公正な対価を支払う貿易"],
+["EU","ヨーロッパの国々による政治・経済統合の組織"],
+["ASEAN","東南アジア諸国連合"],
+["国際分業","国や地域が得意な製品などを分担して生産すること"],
+["季節風気候","季節風の影響を強く受ける気候"],
+["扇状地の果樹園","水はけのよさを生かした土地利用の例"],
+["水田単作","同じ土地で主に稲作を行う農業形態"]
+],
+歴史: [
+["大化の改新","645年に始まった政治改革"],
+["墾田永年私財法","開墾した土地の永久私有を認めた法令"],
+["平城京","710年に移された奈良時代の都"],
+["平安京","794年に移された都"],
+["摂関政治","藤原氏が摂政・関白として行った政治"],
+["院政","上皇が天皇に代わって行った政治"],
+["御成敗式目","北条泰時が制定した武士のための法律"],
+["承久の乱","後鳥羽上皇が鎌倉幕府に対して起こした戦い"],
+["建武の新政","後醍醐天皇が始めた政治"],
+["南北朝","京都と吉野に朝廷が分かれた時代"],
+["応仁の乱","1467年に始まり戦国時代のきっかけとなった争乱"],
+["楽市・楽座","座の特権を廃止し商工業を自由にした政策"],
+["太閤検地","豊臣秀吉が全国の田畑を調査した政策"],
+["刀狩","豊臣秀吉が農民から武器を取り上げた政策"],
+["参勤交代","大名に江戸と領国を往復させた制度"],
+["鎖国","江戸幕府が外国との交流を制限した政策"],
+["享保の改革","徳川吉宗が行った幕政改革"],
+["寛政の改革","松平定信が行った幕政改革"],
+["天保の改革","水野忠邦が行った幕政改革"],
+["日米和親条約","1854年に日本とアメリカが結んだ条約"],
+["大政奉還","徳川慶喜が政権を朝廷に返したこと"],
+["廃藩置県","藩を廃止して府県を置いた明治政府の政策"],
+["地租改正","土地所有者に地価を基準とする税を課した改革"],
+["徴兵令","満20歳の男子に兵役の義務を課した制度"],
+["自由民権運動","国会開設や憲法制定を求めた運動"],
+["大日本帝国憲法","1889年に発布された憲法"],
+["日清戦争","1894年に始まった日本と清の戦争"],
+["日露戦争","1904年に始まった日本とロシアの戦争"],
+["韓国併合","1910年に日本が韓国を植民地化したこと"],
+["米騒動","1918年に米価の高騰を背景に起きた民衆運動"],
+["普通選挙法","1925年に満25歳以上の男子に選挙権を認めた法律"],
+["治安維持法","国体の変革などを取り締まるため制定された法律"],
+["満州事変","1931年に関東軍が柳条湖事件をきっかけに起こした軍事行動"],
+["五・一五事件","1932年に海軍将校らが犬養毅首相を暗殺した事件"],
+["二・二六事件","1936年に陸軍青年将校らが起こしたクーデター未遂事件"],
+["ポツダム宣言","連合国が日本に無条件降伏を求めた宣言"],
+["日本国憲法","1946年公布、1947年施行の憲法"],
+["サンフランシスコ平和条約","1951年に調印され日本の主権回復を定めた条約"],
+["高度経済成長","1950年代半ばから1970年代初めの急速な経済成長"],
+["ベルリンの壁崩壊","1989年に東西冷戦の象徴が取り払われた出来事"]
+],
+公民: [
+["基本的人権","人間が生まれながらに持つ侵すことのできない権利"],
+["国民主権","国の政治のあり方を最終的に決める権限が国民にある原理"],
+["平和主義","戦争を放棄し平和を大切にする考え方"],
+["基本的人権の尊重","日本国憲法の三大原則の一つ"],
+["法の下の平等","すべての人が法の下に平等であるという原則"],
+["自由権","国家から不当に干渉されない権利"],
+["社会権","人間らしい生活を保障するため国家に求める権利"],
+["生存権","健康で文化的な最低限度の生活を営む権利"],
+["参政権","政治に参加する権利"],
+["請求権","国や公共団体に一定の行為を求める権利"],
+["公共の福祉","人権同士の衝突を調整する考え方"],
+["国会","国権の最高機関で唯一の立法機関"],
+["内閣","行政権を担当する機関"],
+["裁判所","司法権を担当する機関"],
+["三権分立","権力を立法・行政・司法に分ける仕組み"],
+["衆議院","任期4年で解散がある国会の議院"],
+["参議院","任期6年で3年ごとに半数を改選する議院"],
+["内閣不信任決議","衆議院が内閣を信任しない意思を示す決議"],
+["違憲審査制","法律などが憲法に違反しないか判断する制度"],
+["地方自治","地域の政治を住民の意思に基づいて行うこと"],
+["直接請求権","住民が条例制定などを直接求める権利"],
+["需要","ある価格で商品を買おうとする量"],
+["供給","ある価格で商品を売ろうとする量"],
+["市場価格","市場で需要と供給によって決まる価格"],
+["独占禁止法","公正で自由な競争を守るための法律"],
+["公正取引委員会","独占禁止法を運用する行政機関"],
+["寡占","少数の企業が市場を支配している状態"],
+["独占","一つの企業が市場を支配している状態"],
+["インフレーション","物価が継続的に上昇すること"],
+["デフレーション","物価が継続的に下落すること"],
+["日本銀行","日本の中央銀行"],
+["金融政策","中央銀行が通貨量や金利を調整する政策"],
+["財政政策","政府が歳入・歳出を通じて経済に働きかける政策"],
+["累進課税","所得が高いほど高い税率を適用する仕組み"],
+["直接税","税を負担する人が直接納める税"],
+["間接税","税を負担する人と納める人が異なる税"],
+["社会保障","人々の生活を支えるための公的な制度"],
+["労働三権","団結権・団体交渉権・団体行動権"],
+["消費者主権","消費者が商品やサービスを選択することで生産に影響を与える考え方"],
+["持続可能な社会","将来の世代の利益も損なわずに発展する社会"]
+]
+};
+
+const $ = id => document.getElementById(id);
+const state = {
+  active:false, category:"地理", duration:180, deadline:0, timer:null,
+  stage:1, score:0, combo:0, maxCombo:0, correct:0, attempts:0,
+  deck:[], flipped:[], lock:false, stagePairs:6, matched:0,
+  review:[], seen:new Set(), used:new Set(), sound:true, audio:null
+};
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function formatTime(sec){sec=Math.max(0,sec);return `${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;}
+function playTone(freq=650,duration=.09,type="sine"){
+  if(!state.sound)return;
+  try{state.audio ||= new (window.AudioContext||window.webkitAudioContext)();if(state.audio.state==="suspended")state.audio.resume();
+    const o=state.audio.createOscillator(),g=state.audio.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.055,state.audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,state.audio.currentTime+duration);o.connect(g);g.connect(state.audio.destination);o.start();o.stop(state.audio.currentTime+duration);
+  }catch(e){}
+}
+function bankForGame(){
+  const source=BANK[state.category].map((p,i)=>({id:`${state.category}-${i}`,term:p[0],meaning:p[1]}));
+  let available=source.filter(q=>!state.used.has(q.id));
+  if(available.length<6){state.used.clear();available=source;}
+  const chosen=shuffle(available).slice(0,6);
+  chosen.forEach(q=>state.used.add(q.id));
+  return chosen;
+}
+function startGame(){
+  state.category=$("category").value;state.duration=Number($("duration").value);
+  state.active=true;state.stage=1;state.score=0;state.combo=0;state.maxCombo=0;state.correct=0;state.attempts=0;state.review=[];state.used.clear();
+  $("home").classList.add("hidden");$("end").classList.add("hidden");$("game").classList.remove("hidden");
+  $("categoryTag").textContent=state.category;
+  buildStage();state.deadline=Date.now()+state.duration*1000;tick();clearInterval(state.timer);state.timer=setInterval(tick,150);
+}
+function buildStage(){
+  state.flipped=[];state.lock=false;state.matched=0;
+  const pairs=bankForGame();const cards=[];
+  pairs.forEach((p,index)=>{
+    cards.push({uid:`${p.id}-t`,pair:p.id,type:"term",text:p.term,meaning:p.meaning});
+    cards.push({uid:`${p.id}-m`,pair:p.id,type:"meaning",text:p.meaning,term:p.term});
+  });
+  state.deck=shuffle(cards);
+  $("stageTitle").textContent=state.stage%5===0?`BOSS STAGE ${state.stage}`:`STAGE ${state.stage}`;
+  $("stageSub").textContent=state.stage%5===0?"BOSS CHALLENGE — 集中力を研ぎ澄ませ！":"すべてのペアを見つけよう";
+  $("stageHud").textContent=state.stage;
+  $("board").innerHTML="";
+  state.deck.forEach((card,index)=>{
+    const btn=document.createElement("button");btn.className=`card ${card.type}`;btn.type="button";btn.dataset.index=index;btn.setAttribute("aria-label","カードをめくる");
+    btn.innerHTML=`<div class="card-inner"><div class="face back">✦</div><div class="face front ${card.type}"><span class="kind">${card.type==="term"?"WORD":"MEANING"}</span>${escapeHtml(card.text)}</div></div>`;
+    btn.addEventListener("click",()=>flip(index,btn));$("board").appendChild(btn);
+  });
+  updateHUD();
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function flip(index,btn){
+  if(!state.active||state.lock||state.deck[index].matched||state.flipped.includes(index))return;
+  state.flipped.push(index);btn.classList.add("flipped");btn.disabled=true;playTone(430,.05);
+  if(state.flipped.length===2){
+    state.lock=true;state.attempts++;
+    const [a,b]=state.flipped,ca=state.deck[a],cb=state.deck[b];
+    if(ca.pair===cb.pair&&ca.type!==cb.type){
+      setTimeout(()=>matchCards(a,b),260);
+    }else{
+      state.combo=0;recordReview(ca,false);recordReview(cb,false);updateHUD();
+      setTimeout(()=>{
+        [a,b].forEach(i=>{const el=$("board").children[i];el.classList.remove("flipped");el.disabled=false;});
+        state.flipped=[];state.lock=false;playTone(170,.13,"triangle");
+      },850);
+    }
+  }
+}
+function recordReview(card,correct){
+  const existing=state.review.find(x=>x.id===card.pair);
+  if(existing){if(correct)existing.correct=true;else if(!existing.correct)existing.wrong=true;return;}
+  const pair=state.deck.find(x=>x.pair===card.pair);
+  state.review.push({id:card.pair,term:pair.type==="term"?pair.text:pair.term,meaning:pair.type==="meaning"?pair.text:pair.meaning,correct,wrong:!correct});
+}
+function matchCards(a,b){
+  if(!state.active)return;
+  [a,b].forEach(i=>{const el=$("board").children[i];el.classList.add("matched");el.disabled=true;});
+  const ca=state.deck[a];recordReview(ca,true);state.correct++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
+  const bonus=state.combo>=2?state.combo*10:0;state.score+=100+bonus;state.matched++;state.flipped=[];state.lock=false;
+  playTone(760,.1);if(state.combo>=2)showCombo(state.combo);
+  updateHUD();
+  if(state.matched===6){
+    const stageBonus=state.stage%5===0?300:100;state.score+=stageBonus;
+    $("stageSub").textContent=`STAGE CLEAR! +${stageBonus} BONUS`;
+    playTone(920,.18);
+    updateHUD();
+    setTimeout(()=>{if(state.active){state.stage++;buildStage();}},900);
+  }
+}
+function showCombo(n){
+  const words=n>=15?"LEGENDARY!":n>=10?"SUPER COMBO!":n>=5?"EXCELLENT!":n>=3?"GREAT!":"NICE!";
+  $("comboPop").innerHTML=`<span>${words} ×${n}</span>`;
+  setTimeout(()=>$("comboPop").innerHTML="",780);
+}
+function updateHUD(){
+  $("score").textContent=state.score.toLocaleString();$("combo").textContent=state.combo;
+  $("pairsLeft").textContent=`残り${6-state.matched}ペア`;
+  $("progressBar").style.width=`${state.matched/6*100}%`;
+}
+function tick(){
+  if(!state.active)return;
+  const remain=Math.ceil((state.deadline-Date.now())/1000);
+  $("time").textContent=formatTime(remain);$("time").classList.toggle("timer-warn",remain<=30);
+  if(remain<=10&&remain>0&&remain!==state._lastSecond){playTone(520,.045,"square");}
+  state._lastSecond=remain;
+  if(remain<=0)endGame();
+}
+function endGame(){
+  if(!state.active)return;state.active=false;clearInterval(state.timer);state.lock=true;
+  $("game").classList.add("hidden");$("end").classList.remove("hidden");
+  $("finalScore").textContent=state.score.toLocaleString();
+  $("finalStage").textContent=state.stage;
+  $("finalCorrect").textContent=state.correct;
+  $("finalRate").textContent=state.attempts?Math.round(state.correct/state.attempts*100)+"%":"—";
+  $("finalCombo").textContent=state.maxCombo;
+  const rate=state.attempts?state.correct/state.attempts:0;
+  const title=state.score>=5000?"LEGENDARY":state.score>=3000?"知識の探究者":state.score>=1500?"社会科マスター":state.score>=500?"チャレンジャー":"挑戦者";
+  $("titleAward").textContent=`獲得称号：${title}`;
+  playTone(330,.18);setTimeout(()=>playTone(520,.2),180);setTimeout(()=>playTone(780,.3),360);
+}
+function openReview(filter="all"){
+  $("overlay").classList.remove("hidden");
+  const items=state.review.filter(x=>filter==="all"||(filter==="wrong"?x.wrong&&!x.correct:x.correct));
+  $("reviewList").innerHTML=items.length?items.map(x=>`<div class="review-item"><b>${escapeHtml(x.term)}</b><br><em>${escapeHtml(x.meaning)}</em><br><span class="subtle">${x.correct?"正解済み":"要復習"}</span></div>`).join(""):`<div class="review-item subtle">まだ表示できる履歴がありません。</div>`;
+}
+$("startBtn").addEventListener("click",startGame);
+$("againBtn").addEventListener("click",()=>{$("end").classList.add("hidden");$("home").classList.remove("hidden");});
+$("reviewBtn").addEventListener("click",()=>openReview());
+$("endReviewBtn").addEventListener("click",()=>openReview());
+$("closeModal").addEventListener("click",()=>$("overlay").classList.add("hidden"));
+$("allTab").addEventListener("click",()=>openReview("all"));
+$("wrongTab").addEventListener("click",()=>openReview("wrong"));
+$("rightTab").addEventListener("click",()=>openReview("right"));
+document.addEventListener("visibilitychange",()=>{if(state.active)tick();});
+</script>
+</body>
+</html>
